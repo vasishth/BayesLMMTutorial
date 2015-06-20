@@ -1,0 +1,17 @@
+Package: BayesLMMTutorial
+Type: Package
+Title: Tutorial on fitting Bayesian Linear Mixed Models using Stan
+Version: 1.0
+Date: 2015-06-12
+Authors@R: c(person("Shravan", "Vasishth", 
+             role=c("aut","cre"),
+             email="vasishth@uni-potsdam.de"))
+Maintainer: Shravan Vasishth <vasishth@uni-potsdam.de>
+Description: This package provides the code accompanying the paper by Sorensen and Vasishth on fitting linear mixed models using Stan. We provide an example for a two-condition repeated measures design, a 2x2 repeated measures factorial design, and some other more complex designs.
+Depends: R (>= 3.1.0), rstan(>=2.6)
+Suggests: lme4(>= 1.1), knitr
+BugReports: https://github.com/vasishth/BayesLMMTutorial/issues
+VignetteBuilder: knitr
+License: MIT
+Encoding: UTF-8
+LazyData: yes
