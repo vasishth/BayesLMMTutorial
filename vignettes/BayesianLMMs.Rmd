@@ -1,0 +1,430 @@
+---
+title: "Fitting Bayesian LMMs using Stan: A tutorial"
+author: "Shravan Vasishth and Tanner Sorensen"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Bayesian data analysis examples}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r preliminaries,echo=FALSE,cache=FALSE}
+library(rstan)
+library(knitr)
+options(width=92,
+        show.signif.stars = FALSE)
+opts_chunk$set(comment=NA, fig.width=8, fig.height=10)
+```
+
+
+# Example 1: Gibson and Wu 2013 data
+
+This is the data reported in Gibson and Wu 2013. It is available with this package.
+
+## Model 1
+
+Read in the Read in the Gibson and Wu data and subset head noun:
+
+```{r loadgibsonwudata}
+rDat<-read.table("../data/gibsonwu2012data.txt",header=TRUE)
+
+rDat<-subset(rDat,region=="headnoun")
+dim(rDat)
+```
+
+Convert subject and item to factors:
+
+```{r definefactorsmodel1}
+rDat$region<-factor(rDat$region)
+rDat$subj <- factor(rDat$subj)
+rDat$item <- factor(rDat$item)
+summary(rDat)
+```
+
+Apply sum contrast coding to predictor (obj:+1; subj:-1):
+
+
+```{r contrastcodingmodel1}
+rDat$so <- ifelse(rDat$type=="subj-ext",-1,1)
+summary(rDat)
+```
+
+Set up data for Stan:
+
+```{r datasetupmodel1}
+stanDat<-list(rt=rDat$rt,
+              so = rDat$so,
+              N = nrow(rDat))
+```
+
+Load, compile, and fit model:
+
+
+```{r fitmodel1}              
+fixEfFit <- stan(file="fixEf.stan", 
+                 data = stanDat, 
+                 iter=2000, chains = 4)
+
+save(list="fixEfFit",file="../data/fixEfFit.Rda",
+     compress="xz")
+```
+
+```{r traceplotmodel1}
+traceplot(fixEfFit,pars=c("beta","sigma_e"),inc_warmup=FALSE)
+```
+
+```{r summarizeresultsmodel1}
+print(fixEfFit,pars=c("beta","sigma_e"),probs=c(0.025,0.5,0.975))
+```
+
+Plot the posterior distributions:
+
+
+```{r,fig.show='hold'}
+beta0 <- extract(fixEfFit,pars=c("beta[1]"))$beta
+beta1 <- extract(fixEfFit,pars=c("beta[2]"))$beta
+sigma_e <- extract(fixEfFit,pars=c("sigma_e"))$sigma_e
+N_iter<-length(beta0)
+theta<-list(beta0=beta0,beta1=beta1,sigma_e=sigma_e)
+lab<-c(expression(hat(beta)[0]),expression(hat(beta)[1]),expression(hat(sigma)[e]))
+lim<-matrix(c(6.25,-0.09,.55,
+              6.45,.03,.75),nrow=3,ncol=2)
+par(mfrow=c(3,3))
+for(i in 1:3)
+  for(j in 1:3){
+    if(i==j){
+      # PLOT MARGINALS ON DIAGONAL
+      hist(theta[[i]],freq=FALSE,col="black",border="white",main=NULL,xlab=lab[i])
+    }else if(i>j){
+      # PLOT BIVARIATE ON THE LOWER TRIANGULAR
+      # CODE ADAPTED FROM: 
+      # http://stats.stackexchange.com/questions/24380/how-to-get-ellipse-region-from-bivariate-normal-distributed-data
+      xy<-matrix(nrow=N_iter,ncol=2)
+      xy[,1]<-theta[[i]]
+      xy[,2]<-theta[[j]]
+      center <- apply(xy, 2, mean)
+      sigma <- cov(xy)
+      sigma.inv = solve(sigma, matrix(c(1,0,0,1),2,2))
+      # DEFINE GRID
+      n <- 50
+      xlim<-lim[i,]
+      ylim<-lim[j,]
+      x <- seq(xlim[1],xlim[2],length.out=n)
+      y <- seq(ylim[1],ylim[2],length.out=n)
+      # EVALUATE HEIGHT FUNCTION ON GRID
+      height <- function(s,t) {u<-c(s,t)-center; u %*% sigma.inv %*% u / 2}
+      z <- mapply(height, as.vector(rep(x,n)), as.vector(outer(rep(0,n), y, `+`)))
+      # PLOT
+      plot(xy, pch=20, xlim=xlim, ylim=ylim, xlab=lab[i], ylab=lab[j])
+      contour(x,y,matrix(z,n,n), levels=(0:2), col = gray(.5), lwd=2, add=TRUE)
+    }else{
+      # SKIP UPPER TRIANGULAR PLOTS (REPEATS)
+      plot.new()
+    }
+  }
+```
+
+Find the 95\% credible interval for the slope parameter:
+
+```{r}
+beta1 <- extract(fixEfFit,pars=c("beta[2]"))$beta
+print(signif(quantile(beta1,probs=c(0.025,0.5,0.975)),2))
+
+mean(beta1<0)
+```
+
+## Model 2
+
+
+$$\log rt_{jk} = \beta _0 + u_{0j} + w_{0k} + \beta _1 so_{jk} + \epsilon_{jk}$$
+
+
+```{r setupdatadatamodel2}
+stanDat<-list(subj=as.integer(factor(rDat$subj)),
+              item=as.integer(factor(rDat$item)),
+              rt=rDat$rt,
+              so=rDat$so,
+              N=nrow(rDat),
+              J=length(unique(rDat$subj)),
+              K=length(unique(rDat$item)))
+```
+
+```{r compileandfitmodel}
+ranIntFit <- stan(file="ranInt.stan", data = stanDat, 
+                  iter=2000, chains = 4)
+```
+
+```{r saveresultsmodel2}
+save(list="ranIntFit",file="../data/ranIntFit.Rda",
+     compress="xz")
+```
+
+Examining the posterior distribution:
+
+```{r summarizeresultsmodel2}
+print(ranIntFit,pars=c("beta","sigma_e","sigma_u","sigma_w"),
+      probs=c(0.025,0.5,0.975))
+
+beta1 <- extract(ranIntFit,pars=c("beta[2]"))$beta
+print(signif(quantile(beta1,probs=c(0.025,0.5,0.975)),2))
+
+mean(beta1<0)
+```
+
+
+## Model 3
+
+$$
+\log rt_{jk} = \beta_0 + u_{0j} + w_{0k} + (\beta_1 + u_{1j} + w_{1k}) so_{jk} + \epsilon_{jk} 
+$$
+
+
+```{r}
+############################
+## VARYING INTERCEPTS, 
+## VARYING SLOPES MIXED 
+## EFFECTS MODEL
+############################
+
+# 1. Compile and fit model.
+ranIntSlpFit <- stan(file="ranIntSlp.stan", data = stanDat, 
+                     iter=2000, chains = 4)
+
+save(list="ranIntSlpFit",
+     file="../data/ranIntSlpFit.Rda",
+     compress="xz")
+```
+
+```{r}
+print(ranIntSlpFit,pars=c("beta","sigma_e","sigma_u","sigma_w"),
+      probs=c(0.025,0.5,0.975))
+
+beta1 <- extract(ranIntSlpFit,pars=c("beta[2]"))$beta
+print(signif(quantile(beta1,probs=c(0.025,0.5,0.975)),2))
+
+mean(beta1<0)
+```
+
+Comparison with lme4: note that lme4 fails to estimate the correlations:
+
+```{r}
+library(lme4)
+so<-ifelse(rDat$type=="obj-ext",1,-1)
+lmer(log(rt)~so+(1+so|subj)+(1+so|item),rDat)
+```
+
+## Posterior predictive checks
+
+```{r}
+############################
+## POSTERIOR PREDICTIVE 
+## CHECKS
+############################
+
+# 1. Compile and fit model.
+pp <- stan(file="pp.stan", data = stanDat, 
+           warmup=500,iter=750, chains = 1)
+
+save(list="pp",file="../data/pp.Rda",
+     compress="xz")
+```
+
+Plot correlations between intercepts and slopes for subjects and for items:
+
+```{r fig.show='hold'}
+J<-length(unique(rDat$subj))
+u<-matrix(nrow=2,ncol=J)
+for(j in 1:J)
+  for(i in 1:2)
+    u[i,j]<-mean(extract(ranIntSlpFit,pars=c(paste("u[",i,",",j,"]",sep="")))[[1]])
+N_sample<-length(extract(ranIntSlpFit,pars="L_u[1,1]")[[1]])
+L_u<-array(dim=c(2,2,N_sample))
+for(i in 1:2)
+  for(j in 1:2)
+    L_u[i,j,]<-extract(ranIntSlpFit,pars=c(paste("L_u[",i,",",j,"]",sep="")))[[1]]
+omega_u<-numeric()
+for(i in 1:N_sample){
+  Omega_u<-L_u[,,i]%*%t(L_u[,,i])
+  omega_u[i]<-Omega_u[1,2]
+}
+# Extract item random intercepts and slopes.
+K<-length(unique(rDat$item))
+w<-matrix(nrow=2,ncol=K)
+for(k in 1:K)
+  for(i in 1:2)
+    w[i,k]<-mean(extract(ranIntSlpFit,pars=c(paste("w[",i,",",k,"]",sep="")))[[1]])
+L_w<-array(dim=c(2,2,N_sample))
+for(i in 1:2)
+  for(j in 1:2)
+    L_w[i,j,]<-extract(ranIntSlpFit,pars=c(paste("L_w[",i,",",j,"]",sep="")))[[1]]
+omega_w<-numeric()
+for(i in 1:N_sample){
+  Omega_w<-L_w[,,i]%*%t(L_w[,,i])
+  omega_w[i]<-Omega_w[1,2]
+}
+# Visualize the posterior distribution for the intercept beta[1] ...
+par(mfrow=c(2,2),pch=21,bg="white")
+plot(u[1,],u[2,],bg="black",mgp=c(2,.25,0),
+     xlim=c(-.6,.6),ylim=c(-.04,.04),
+     xlab=expression(hat(u[0])),ylab=expression(hat(u[1])))
+plot(w[1,],w[2,],bg="black",mgp=c(2,.25,0),
+     xlim=c(-.6,.6),ylim=c(-.04,.04),
+     xlab=expression(hat(w[0])),ylab=expression(hat(w[1])))
+hist(omega_u,freq=FALSE,col="black",border="white",
+     main=NULL,xlab=expression(hat(omega)[u]))
+hist(omega_w,freq=FALSE,col="black",border="white",
+     main=NULL,xlab=expression(hat(omega)[w]))
+```
+
+Inference:
+
+```{r inference}
+
+library(coda)
+# Get HPD interval for beta[2]
+beta1<-as.mcmc(unlist(extract(ranIntSlpFit,pars="beta[2]")))
+betaHPD<-HPDinterval(beta1,prob=0.95)
+# Get HPD interval for omega_u
+N_iter<-length(beta1)
+omega_u<-numeric(N_iter)
+L_u<-array(dim=c(2,2,N_iter))
+for(i in 1:2)
+  for(j in 1:2)
+    L_u[i,j,]<-extract(ranIntSlpFit,pars=paste("L_u[",i,",",j,"]",sep=""))[[1]]
+for(i in 1:N_iter)
+  omega_u[i] <- tcrossprod(L_u[,,i])[1,2]
+omega_u<-as.mcmc(omega_u)
+omegaHPD<-HPDinterval(omega_u,prob=0.95)
+# PLOT HPD INTERVALS ON THE MARGINAL POSTERIORS
+par(mfrow=c(1,2))
+hist(beta1,freq=FALSE,col="black",border="white",xaxt="n",
+     main=NULL,xlim=c(-.1,.1),xlab=expression(hat(beta)[1]))
+abline(v=betaHPD,lty=2,lwd=2)
+axis(1, at = seq(-.1,.1,length.out=5), labels = seq(-.1,.1,length.out=5))
+hist(omega_u,freq=FALSE,col="black",border="white",
+     main=NULL,xlab=expression(hat(omega)[u]),xlim=c(-1,1))
+abline(v=omegaHPD,lty=2,lwd=2)
+```
+
+Posterior predictive checks:
+
+```{r, fig.show='hold'}
+rDat<-read.table("../data/gibsonwu2012data.txt",header=TRUE)
+# 2. Define the test quantity.
+test<-function(rt){quantile(rt,probs=.95,names=FALSE)}
+# 3. Get maximum of observed RT distribution.
+upRT <- test(rDat$rt)
+# 4. Read in the posterior predictive model.
+load("../data/pp.Rda")
+# 5. Extract the posterior predictive RT distributions.
+# (rows are data-sets, columns are trials)
+rt_tilde<-extract(pp,pars="rt_tilde")[[1]]
+# 6. compare 5 randomly selected posterior predictive 
+# RT distributions to the observed RT distribution.
+par(mfrow=c(3,2))
+for(i in sample(1:dim(rt_tilde)[1],5,replace=FALSE,prob=NULL))
+  hist(rt_tilde[i,],freq=FALSE,col="black",border="white",
+     main=NULL,xlab=expression(rt^{rep}),xlim=c(0,1E4))
+hist(rDat$rt,freq=FALSE,col="gray",border="black",
+     main=NULL,xlab=expression(rt^{rep}),xlim=c(0,1E4))
+```
+
+Distribution of the test statistic:
+
+```{r,fig.show='hold',fig.height=7}
+upRTrep<-apply(rt_tilde, 1, test)
+# 8. Compute the probability that upRTrep is greater 
+# than the maximum of the observed RT distribution.
+p<-mean(upRTrep>upRT)
+# 9. Plot the posterior predictive test quantities 
+# upRTrep and the observed test quantity upRT.
+hist(upRTrep,freq=FALSE,col="black",border="white",
+     main=NULL,xlab=expression(T(rt^{rep})),xlim=c(min(upRTrep),upRT))
+abline(v=upRT,lty=2,lwd=2)
+```
+
+## Model 6: 2x2 factorial design
+
+This is an analysis of the data reported in Husain et al 2014. It is included with this package.
+
+```{r}
+############################
+## FACTORIAL MODEL
+############################
+
+# 1. Read in the Husain et al. data.
+rDat<-read.table("../data/HusainEtAlexpt1data.txt",header=TRUE)
+rDat$so<-rDat$RCType # Change name for consistency.
+# 2. Make design matrix.
+X <- unname(model.matrix(~ 1+so+dist+int, rDat))
+attr(X,"assign") <- NULL
+# 3. Factor subj and item.
+rDat$subj <- with(rDat,factor(subj))
+rDat$item <- with(rDat,factor(item))
+# 4. Make Stan data.
+stanDat <- within(list(),
+{
+  N<-nrow(X)
+  P <- n_u <- n_w <- ncol(X)
+  X <- Z_u <- Z_w <- X
+  J <- length(levels(rDat$subj))
+  K <- length(levels(rDat$item))
+  rt <- rDat$rt
+  subj <- as.integer(rDat$subj)
+  item <- as.integer(rDat$item)
+}
+)
+# 5. Fit the model.
+factorialFit <- stan(file="factorialModel.stan",data=stanDat,
+                     iter=2000, chains=4)
+# 6. Save the result.
+save(list="factorialFit",
+     file="../data/factorialFit.Rda",
+     compress="xz")
+```
+
+
+$$
+\log rt_{jk} = \beta _0  + u_{0j} + w_{0k}
+&+(\beta _1 +u_{1j} +w_{1k})so_{jk}
+&+(\beta _2 +u_{2j} +w_{2k})dist_{jk}
+&+(\beta _3 +u_{3j} +w_{3k})int_{jk} + \epsilon_{jk} 
+$$
+
+In matrix form:
+
+$$
+\mathrm{rt} = 
+X\beta + Z_j u_j + Z_k w_k + \epsilon
+$$
+
+$X$ is the $N\times P$ model matrix (with P=4 since we have three fixed effects, plus the intercept), $\beta$ is a $P\times 1$ vector of fixed effects parameters, $Z_j$ and $Z_k$ are the subject and item model matrices ($N\times P$), and $u_j$ and $w_k$ are the by-subject and by-item adjustments to the fixed effects estimates.  $\epsilon$ refers to the residual error  ($N\times 1$).
+
+
+```{r,fig.show='hold'}
+# Extract the fixef coefs.
+beta0 <- extract(factorialFit,pars=c("beta[1]"))
+beta1 <- extract(factorialFit,pars=c("beta[2]"))
+beta2 <- extract(factorialFit,pars=c("beta[3]"))
+beta3 <- extract(factorialFit,pars=c("beta[4]"))
+# Get HPD interval for the fixef coefs.
+beta0HPD<-HPDinterval(as.mcmc(unlist(beta0)),prob=0.95)
+beta1HPD<-HPDinterval(as.mcmc(unlist(beta1)),prob=0.95)
+beta2HPD<-HPDinterval(as.mcmc(unlist(beta2)),prob=0.95)
+beta3HPD<-HPDinterval(as.mcmc(unlist(beta3)),prob=0.95)
+# Plot histograms with HPDs as dotted lines
+par(mfrow=c(2,2))
+hist(beta0$beta,freq=FALSE,col="black",border="white",main="grand mean",xlab=expression(beta[0]))
+abline(v=beta0HPD,lty=2,lwd=2)
+hist(beta1$beta,freq=FALSE,col="black",border="white",main="relative clause type",
+     xlim=c(-.12,.12),xlab=expression(beta[1]))
+abline(v=beta1HPD,lty=2,lwd=2)
+hist(beta2$beta,freq=FALSE,col="black",border="white",main="distance",
+     xlim=c(-.12,.12),xlab=expression(beta[2]))
+abline(v=beta2HPD,lty=2,lwd=2)
+hist(beta3$beta,freq=FALSE,col="black",border="white",main="interaction",
+     xlim=c(-.12,.12),xlab=expression(beta[3]))
+abline(v=beta3HPD,lty=2,lwd=2)
+```
+
