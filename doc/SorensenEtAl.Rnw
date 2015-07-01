@@ -6,6 +6,7 @@
 
 \usepackage{setspace}
 
+
 \usepackage{amsmath,amssymb,amsfonts}
 
 \usepackage{url}   % this allows us to cite URLs in the text
@@ -48,6 +49,8 @@ School of Mathematics and Statistics, University of Sheffield, Sheffield, UK}
 \volume{under review} 
 \keywords{Bayesian data analysis, linear mixed models, Stan}
 
+\doublespacing
+
 \abstract{With the arrival of the R packages \texttt{nlme} and \texttt{lme4}, linear mixed models (LMMs) have come to be widely used in experimentally-driven areas like psychology, linguistics, and cognitive science. This tutorial provides a practical introduction to fitting LMMs in a Bayesian framework using the probabilistic programming language Stan. We choose Stan (rather than WinBUGS or JAGS) because it provides an elegant and scalable framework for fitting models in most of the standard applications of LMMs. We ease the reader into fitting increasingly complex LMMs, first using a two-condition repeated measures self-paced reading study, followed by a more complex $2\times 2$ repeated measures factorial design that can be generalized to much more complex designs.}
 
 \ccoppy{Draft of \today} 
@@ -80,6 +83,16 @@ the \texttt{nlme} package \citep{pinheirobates} and its successor, \texttt{lme4}
 
 Other important developments related to LMMs have been unfolding in  computational statistics.
 Specifically, probabilistic programming languages like WinBUGS \citep{lunn2000winbugs}, JAGS \citep{plummer2011jags} and Stan \citep{stan-manual:2014}, among others, have  made it possible to fit Bayesian LMMs quite easily. However, one prerequisite for using these programming languages is that some background statistical knowledge is needed before one can define the model. This difficulty is well-known; for example, \citet[4]{spiegelhalter2004bayesian} write: ``Bayesian statistics has a (largely deserved) reputation for being mathematically challenging and difficult to put into practice\dots''. 
+
+\singlespacing
+\begin{listing}
+<<test,echo=TRUE,eval=FALSE>>=
+## code chunk 1
+1+1
+@
+\caption{foobar}\label{fig:foobar}
+\end{listing}
+\doublespacing
 
 The purpose of this paper is to facilitate a first encounter with model specification in one of these programming languages, Stan. The tutorial is aimed primarily at psychologists, linguists, and cognitive scientists who have used \texttt{lme4} to fit models to their data, but may have only a basic knowledge of the underlying LMM machinery. A diagnostic test is that they may not be able to answer some or all of these questions: what is a design matrix; what is contrast coding; what is a random effects variance-covariance matrix in a linear mixed model? Our tutorial is not intended for statisticians or psychology researchers who could, for example, write their own Markov Chain Monte Carlo samplers in R or C++ or the like; for them, the Stan manual is the optimal starting point. The present tutorial attempts to ease the beginner into their first steps towards fitting Bayesian linear mixed models. More detailed presentations about linear mixed models are available in several textbooks; references are provided at the end of this tutorial. 
 
@@ -937,6 +950,7 @@ We are grateful to the developers of Stan (in particular, Andrew Gelman, Bob Car
 
 \clearpage
 
+\end{document}
 \appendix
 
 \singlespacing
