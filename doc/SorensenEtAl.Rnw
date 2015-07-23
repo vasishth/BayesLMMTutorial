@@ -33,29 +33,31 @@
 A tutorial for psychologists, linguists, and cognitive scientists}
 \shorttitle{Bayesian linear mixed models: A tutorial}
 
-\twoauthors{Tanner Sorensen}{Shravan Vasishth}
+\threeauthors{Tanner Sorensen}{Sven Hohenstein}{Shravan Vasishth}
 
-\twoaffiliations{University of Potsdam, Potsdam, Germany}{University of Potsdam, Potsdam, Germany, and \\
+\threeaffiliations{University of Potsdam, Potsdam, Germany}
+{University of Potsdam, Potsdam, Germany}
+{University of Potsdam, Potsdam, Germany, and \\
 School of Mathematics and Statistics, University of Sheffield, Sheffield, UK}
 
 % Based off of code provided in a question by Melvin Roest on tex.stackexchange.com
 % (http://tex.stackexchange.com/questions/176745/strange-knitr-behavior-with-apa6-class-manuscript)
 
 %\rightheader{knitr and apa6} % for jou format
-\leftheader{Sorensen, Vasishth}
+\leftheader{Sorensen, Hohenstein, Vasishth}
 
-\authornote{Please send correspondence to both authors \{tanner.sorensen,vasishth\}@uni-potsdam.de.}
+\authornote{Please send correspondence to \{tanner.sorensen,sven.hohenstein,vasishth\}@uni-potsdam.de.}
 \note{\today}
 
-\journal{Submitted to Behavioral Methods} 
-\volume{under review} 
+% \journal{Submitted to Behavioral Methods}
+% \volume{under review}
 \keywords{Bayesian data analysis, linear mixed models, Stan}
 
 \doublespacing
 
 \abstract{With the arrival of the R packages \texttt{nlme} and \texttt{lme4}, linear mixed models (LMMs) have come to be widely used in experimentally-driven areas like psychology, linguistics, and cognitive science. This tutorial provides a practical introduction to fitting LMMs in a Bayesian framework using the probabilistic programming language Stan. We choose Stan (rather than WinBUGS or JAGS) because it provides an elegant and scalable framework for fitting models in most of the standard applications of LMMs. We ease the reader into fitting increasingly complex LMMs, first using a two-condition repeated measures self-paced reading study, followed by a more complex $2\times 2$ repeated measures factorial design that can be generalized to much more complex designs.}
 
-\ccoppy{Draft of \today} 
+\ccoppy{Draft of \today}
 \begin{document}
 
 \maketitle
@@ -113,7 +115,8 @@ The \texttt{knitr} file that generated this paper, as well as all the code and d
 
 \noindent
 In addition, the source code for the paper, all R code, and data are available on github at:
-\url{https://github.com/vasishth/BayesLMMTutorial}.
+
+\url{https://github.com/vasishth/BayesLMMTutorial}
 
 We start with the two-condition repeated measures data-set~\citep{gibsonwu} as a concrete running example. This simple example serves as a starter kit for fitting commonly used LMMs in the Bayesian setting. We assume that the reader has the relevant software installed; specifically, \texttt{rstan} in R. For detailed instructions, see  
 
@@ -122,15 +125,15 @@ We start with the two-condition repeated measures data-set~\citep{gibsonwu} as a
 
 
 \section{Bayesian modeling}
-Bayesian modeling has two major advantages over frequentist analysis with linear mixed models. First, information based on preceding results can be incoportated using different priors. Second, complex models with a large number of random-variance components can be fit. In the following, we will provide a short introduction to Bayesian statistics.
+Bayesian modeling has two major advantages over frequentist analysis with linear mixed models. First, information based on preceding results can be incoportated using different priors. Second, complex models with a large number of random variance components can be fit. In the following, we will provide a short introduction to Bayesian statistics.
 
-Bayesian modeling is based on Bayes' Theorem. It can be seen as a way of understanding how the probability that a hypothesis is true is affected by new data. In the mathematical notation,
+Bayesian modeling is based on Bayes' Theorem. It can be seen as a way of understanding how the probability that a hypothesis is true is affected by new data. In mathematical notation,
 
 $$
 P(H|D) = \frac{P(D|H) P(H)}{P(D)},
 $$
 
-$H$ is the hypothesis we are interested in, and $D$ represents new data. Since $D$ is fixed for a given data-set, we can use the proportinality notion of the theorem,
+$H$ is the hypothesis we are interested in, and $D$ represents new data. Since $D$ is fixed for a given data-set, the theorem can be rephrased as,
 
 $$
 P(H|D) \propto P(D|H) P(H).
@@ -179,9 +182,9 @@ curve(dnorm(x, mean = mstar1, sd = sqrt(vstar1)), add = TRUE, lty = 4)
 
 The researcher starts to collect data. In our example, there are $n = 20$ values with a sample mean of $\bar x = 100$ and a standard deviation of $\sigma = 40$. The corresponding likelihood distribution is displayed in Figure \ref{fig:bayes} (dashed line). The resulting posterior distribution (dash-dot line) is a result of prior and likelihood. Given the prior with the large variance (left-hand panel), the posterior is largely influenced by the data. If the prior has a lower variance (right-hand panel), its influence on the posterior is much stronger resulting is a stroger shift towards the prior's mean.
 
-This toy example illustrates the concept of Bayesian modeling. The prior reflects our knowledge of past results. In most cases, we will use uninformed flat priors such that the posterior distribution is mainly affected by the data. The resulting posterior distribution allows for calculating credible intervals of true parameter values (see below).
+This toy example illustrates the central idea of Bayesian modeling. The prior reflects our knowledge of past results. In most cases, we will use so-called vague flat priors such that the posterior distribution is mainly affected by the data. The resulting posterior distribution allows for calculating credible intervals of true parameter values (see below).
 
-The second advantage of Bayesian modeling concerns variance components (random effects). Fitting a large number of random effects in non-Bayesian settings requires a large amount of data. Often, the data-set is too small to fit relaible distributions of random effects \citep{BatesEtAlParsimonious}.  However, if a researcher is interested in differences between indiviual subjects or items (random intercepts and random slopes) or relationships between differences (correlations between variance components), Bayesian modeling can be used even if there is not enough data for inferential statistics. The resulting posterior distributions might have high variance but they still allow for calculating probabilities of true parameter values of variance components. Note that we do not intend to critisize classical LMMs but highlight possibilities of Bayesian modeling concerning random effects.
+The second advantage of Bayesian modeling concerns variance components (random effects). Fitting a large number of random effects in non-Bayesian settings requires a large amount of data. Often, the data-set is too small to fit reliable distributions of random effects \citep{BatesEtAlParsimonious}.  However, if a researcher is interested in differences between individual subjects or items (random intercepts and random slopes) or relationships between differences (correlations between variance components), Bayesian modeling can be used even if there is not enough data for inferential statistics. The resulting posterior distributions might have high variance but they still allow for calculating probabilities of true parameter values of variance components. Note that we do not intend to degrade classical LMMs but highlight possibilities of Bayesian modeling concerning random effects.
 
 
 \section{Example 1: A two-condition repeated measures design}
@@ -217,7 +220,7 @@ row & subj & item & so & rt \\
 \caption{First six rows, and the last row, of the data-set of Gibson and Wu (2013), as they appear in the data frame.}\label{tab:dataframe1}
 \end{table}
 
-We build up the Bayesian LMM from a fixed effects model 
+We build up the Bayesian LMM from a fixed effects simple linear model 
 % (Section~\ref{subsec:fixef}) 
 to a varying intercepts model 
 %(Section~\ref{subsec:ranint}) 
@@ -252,7 +255,8 @@ The error $\varepsilon _i $ is positive when $\log \hbox{\texttt{rt}}_i$ is grea
 
 \singlespacing
 \begin{listing}
-<<Model1code, eval=FALSE>>=
+% <<Model1code, eval=FALSE>>=
+\begin{Verbatim}[numbers=left,frame=single,fontfamily=courier,fontsize=\footnotesize]
 # read in data:
 rDat <- read.table("gibsonwu2012data.txt", header = TRUE)
 # subset critical region:
@@ -275,7 +279,8 @@ print(fixEfFit, pars = c("beta", "sigma_e"),
 # examine quantiles of parameter of interest:
 beta1 <- unlist(extract(fixEfFit, pars = "beta[2]"))
 print(quantile(beta1, probs = c(0.025, 0.5, 0.975)))
-@
+\end{Verbatim}
+% @
 \caption{Code for the fixed effects Model 1.}\label{fig:Model1code}
 \end{listing}
 \doublespacing
@@ -330,9 +335,9 @@ This call to the function \texttt{stan} will compile a C++ program which produce
 
 The warmup samples, also known as the \emph{burn-in} period, are intended to allow the MCMC sampling process to converge to the equilibrium distribution, the desired joint distribution over the variables. This is necessary since the initial values of the parameters might be very unlikely under the equilibrium distribution and hence bias the result. Once a chain has converged, the samples remain quite stable. Before the MCMC sampling process, the number of interations necessary for convergence is unknown. Therefore, all warmup iterations are discarded.
 
-The number of iterations necessary for convergence to the equilibrium distribution depends on the number of parameters. The probability to reach convergence increases with the number of iterations. Hence, we generally recommend using a large number of iterations although the process might converge after a smaller number of iterations. In the examples in the present paper, we use $1000$ iterations for warmup and another $1000$ iterations for analyzing the posterior distribution. For more complex models, more iterations might be necessary before the MCMC sampling process converges to the equilibrum distribution. Though there are ways to determine how long the simulation needs to be run and the number of warmup iterations given the type of posteriour distribution \citep{Raftery1992}, we will illustrate practical convergence diagnostics for the evaluation of convergence in the samples (see next paragraph).
+The number of iterations necessary for convergence to the equilibrium distribution depends on the number of parameters. The probability to reach convergence increases with the number of iterations. Hence, we generally recommend using a large number of iterations although the process might converge after a smaller number of iterations. In the examples in the present paper, we use $1000$ iterations for warmup and another $1000$ iterations for analyzing the posterior distribution. For more complex models, more iterations might be necessary before the MCMC sampling process converges to the equilibrum distribution. Although there are ways to determine how long the simulation needs to be run and the number of warmup iterations given the type of posteriour distribution \citep{Raftery1992}, we illustrate below practical convergence diagnostics for the evaluation of convergence in the samples.
 
-Besides the number of iterations, we specified sampling in four different chains. Each chain is indenpendent from the others and starts with different random initial values. Running multiple chains has two advantages over a single chain. First, the independent chains are helpful for diagnostics. If all chains have converged to the same region of the parameter space, there is a high probability that they converged to the equilibrium distribution. Second, running multiple chains generally allows for parallel simulations on multiple cores.
+Besides the number of iterations, we specified sampling in four different chains. Each chain is independent from the others and starts with different random initial values. Running multiple chains has two advantages over a single chain. First, the independent chains are helpful for diagnostics. If all chains have converged to the same region of the parameter space, there is a high probability that they converged to the equilibrium distribution. Second, running multiple chains generally allows for parallel simulations on multiple cores.
 
 
 \paragraph{Evaluating model convergence and summarizing results}
@@ -425,10 +430,10 @@ for(i in 1:3)
 \end{figure}
 
 Of immediate interest is the marginal distribution of the slope $\beta _1$. 
-Figure~\ref{fig:jointposterior} suggests that the posterior probability density of $\beta _1$ is mainly spread over the interval $(-\infty,0)$. One quantitative way to assess the posterior probability distribution is to examine its quantiles; see Table~\ref{tab:quantilesGibsonWu}. Here, it is useful to define the concept of the \textit{credible interval}. The $(1-\alpha )$\% credible interval contains $(1-\alpha )$\% of the posterior probability density. Unlike the $(1-\alpha )$\% confidence interval from the frequentist setting, the $(1-\alpha )$\% credible interval represents the range within which we are $(1-\alpha )$\% certain that the true value of the parameter lies, given the prior and the data (see \citealt{morey2015fallacy} for further discussion on CIs vs credible intervals). A common convention is to use the interval ranging from the $2.5$ to $97.5$ percentiles. We follow this convention and 95\% credible intervals in Table~\ref{tab:quantilesGibsonWu}. The last lines of \ref{fig:Model1code} illustrate how these quantiles of the posterior distribution of $\beta_1$ (\texttt{beta[2]}) can be computed.
+Figure~\ref{fig:jointposterior} suggests that the posterior probability density of $\beta _1$ is mainly spread over the interval $(-\infty,0)$. One quantitative way to assess the posterior probability distribution is to examine its quantiles; see Table~\ref{tab:quantilesGibsonWu}. Here, it is useful to define the concept of the \textit{credible interval}. The $(1-\alpha )$\% credible interval contains $(1-\alpha )$\% of the posterior probability density. Unlike the $(1-\alpha )$\% confidence interval from the frequentist setting, the $(1-\alpha )$\% credible interval represents the range within which we are $(1-\alpha )$\% certain that the true value of the parameter lies, given the prior and the data (see \citealt{morey2015fallacy} for further discussion on CIs vs credible intervals). A common convention is to use the interval ranging from the $2.5$th to $97.5$th percentiles. We follow this convention and 95\% credible intervals in Table~\ref{tab:quantilesGibsonWu}. The last lines of \ref{fig:Model1code} illustrate how these quantiles of the posterior distribution of $\beta_1$ (\texttt{beta[2]}) can be computed.
 
 The samples of $\beta_1$ suggests that approximately
-\Sexpr{round(mean(beta1<0),digits=2)*100}\% of the posterior probability density is below zero, suggesting that there is some evidence that object relatives are easier to process than subject relatives in Chinese, given the Gibson and Wu data. However, since the 95\% credible interval includes 0, we may be reluctant to conclude that object relatives are easier to process.
+\Sexpr{round(mean(beta1<0),digits=2)*100}\% of the posterior probability density is below zero, suggesting that there is some evidence that object relatives are easier to process than subject relatives in Chinese, given the Gibson and Wu data. However, since the 95\% credible interval includes 0, we may be reluctant to draw this conclusion.
 We will say more about the evaluation of research hypotheses further on. 
 
 \subsection{Varying Intercepts Mixed Effects Model}
@@ -457,7 +462,8 @@ For the following discussion, please consult Listing~\ref{fig:Model2code} for th
 
 \singlespacing
 \begin{listing}
-<<Model2code, eval=FALSE>>=
+% <<Model2code, eval=FALSE>>=
+\begin{Verbatim}[numbers=left,frame=single,fontfamily=courier,fontsize=\footnotesize]
 # format data for Stan:
 stanDat <- list(subj = as.integer(factor(rDat$subj)),
                 item = as.integer(factor(rDat$item)),
@@ -479,7 +485,8 @@ print(quantile(beta1, probs = c(0.025, 0.5, 0.975)))
 
 # Posterior probability of beta1 being less than 0:
 mean(beta1 < 0)                  
-@
+\end{Verbatim}
+% @
 \caption{Code for running Model 2, the varying intercepts model.}\label{fig:Model2code}
 \end{listing}
 \doublespacing
@@ -534,7 +541,7 @@ The vector \texttt{u} has varying intercepts for subjects. Likewise, the vector 
 \paragraph{Running the model}
 
 In R, we pass the list \texttt{stanDat} of data to \texttt{stan}, which compiles a C++ program to sample from the posterior distribution of Model~\ref{eq:ranint}.
-Stan samples from the posterior distribution of the model parameters, including the varying intercepts $u_{0j}$ and $w_{0k}$ for each subject $j \ in \{1,\ldots ,J\}$ and item $k \in \{1,\ldots ,K\}$. 
+Stan samples from the posterior distribution of the model parameters, including the varying intercepts $u_{0j}$ and $w_{0k}$ for each subject $j \in \{1,\ldots ,J\}$ and item $k \in \{1,\ldots ,K\}$. 
 
 It may be helpful to rewrite the model in mathematical form following the Stan syntax (\citealt{gelmanhill07} use a similar notation); the Stan statements are slightly different from the way that we expressed Model~\ref{eq:ranint}. Defining $i$ as the row id in the data, i.e., $i \in  \{1,\dots, 547\}$, we can write:
 
@@ -805,7 +812,8 @@ This digression into Cholesky decomposition and the generation of correlated ran
 
 \singlespacing
 \begin{listing}
-<<Model3code, eval=FALSE>>=
+% <<Model3code, eval=FALSE>>=
+\begin{Verbatim}[numbers=left,frame=single,fontfamily=courier,fontsize=\footnotesize]
 ranIntSlpFit <- stan(file = "ranIntSlp.stan", data = stanDat,
                      iter = 2000, chains = 4)
 
@@ -814,7 +822,8 @@ ranIntSlpFit <- stan(file = "ranIntSlp.stan", data = stanDat,
 beta1 <- unlist(extract(ranIntSlpFit, pars = "beta[2]"))
 print(quantile(beta1, probs = c(0.025, 0.5, 0.975)))
 mean(beta1 < 0)
-@
+\end{Verbatim}
+% @
 \caption{Code for running Model 3, the varying intercepts, varying slopes model.}\label{fig:Model3code}
 \end{listing}
 \doublespacing
@@ -925,7 +934,7 @@ The definition of the prior \texttt{L\_u $\sim $ lkj\_corr\_cholesky(2.0)} impli
 \end{equation}
 
 \noindent
-where $\rho _u$ is the correlation between the by-subject varying intercept $\sigma _{u0}$ and slope $\sigma _{u1}$ (cf.\ the covariance matrix of Equation~\ref{eq:covmat}) and $\rho _w$ is the correlation between the by-item varying intercept $\sigma _{w0}$ and slope $\sigma _{w1}$. The lkj distribution with shape parameter $\eta =1.0$ is a uniform prior over all $2\times 2$ correlation matrices; it scales up to larger correlation matrices. The parameter $\eta$ has an effect on the shape of the lkj distribution. Our choice of $\eta=2.0$ implies that the correlations in the off-diagonals are near zero, reflecting the prior belief that there is no correlation between intercepts and slopes. 
+where $\rho _u$ is the correlation between the by-subject varying intercept $\sigma _{u0}$ and slope $\sigma _{u1}$ (cf.\ the covariance matrix of Equation~\ref{eq:covmat}) and $\rho _w$ is the correlation between the by-item varying intercept $\sigma _{w0}$ and slope $\sigma _{w1}$. The lkj distribution with shape parameter $\eta =1.0$ is a uniform prior over all $2\times 2$ correlation matrices; it scales up to larger correlation matrices. The parameter $\eta$ has an effect on the shape of the lkj distribution. Our choice of $\eta=2.0$ implies that the correlations in the off-diagonals are near zero, reflecting the fact that we have no prior information about the correlation between intercepts and slopes.
 
 The statement \texttt{to\_vector(z\_u) $\sim $ normal(0,1)} places a normal distribution with mean zero and standard deviation one on \texttt{z\_u}. The same goes for \texttt{z\_w}. The for-loop assigns to $\hbox{\texttt{mu}}$ the mean of the log-normal distribution from which we draw $\hbox{\texttt{rt[i]}}$, conditional on the value of the predictor \texttt{so[i]} for relative clause type and the subject and item identity.
 
@@ -950,7 +959,7 @@ $\hat \sigma_{w1}$ & 0.04  &       0.0  &  0.10 &     1\\
 \caption{The quantiles and the $\hat R$ statistic in the Gibson and Wu data, the varying intercepts, varying slopes model.}\label{tab:Model3posterior}
 \end{table}
 
-Figure~\ref{fig:lmlist} plots the varying slope's posterior distribution against the varying intercept's posterior distribution for each subject. The correlation between $u_0$ and $u_1$ is negative, as captured by the marginal posterior distributions of the correlation $\rho _u$ between $u_0$ and $u_1$. Thus, Figure~\ref{fig:lmlist} suggests that the slower a subject's reading time is on average, the slower they read object relatives. In contrast, Figure~\ref{fig:lmlist} shows no clear pattern for the by-item varying intercepts and slopes. We briefly discuss inference next.
+Figure~\ref{fig:lmlist} plots the varying slope's posterior distribution against the varying intercept's posterior distribution for each subject. The correlation between $u_0$ and $u_1$ is negative, as captured by the marginal posterior distributions of the correlation $\rho _u$ between $u_0$ and $u_1$. Thus, Figure~\ref{fig:lmlist} suggests that the slower a subject's reading time is on average, the slower they read object relatives. In contrast, Figure~\ref{fig:lmlist} shows no clear pattern for the by-item varying intercepts and slopes. The broader distribution of the correlation parameter for items compared to slopes illustrates the greater uncertainty concerning the true value of the parameter. We briefly discuss inference next.
 
 \begin{figure}[!htbp]
 \centering
@@ -1014,7 +1023,7 @@ hist(omega_w,freq=FALSE,col="black",border="white",
 
 \paragraph{Random effects in a non-Bayesian LMM}
 
-We fit the same model also as a classical non-Bayesian LMM with the \texttt{lmer} function from the \texttt{lme4} package. This allows for comparing the results to the Stan results. Here, we focus on random effects. As illustrated in Figure \ref{fig:lmercomp}, the estimates of the random-effect standard deviations of the classical LMM are in agreement with the modes of the posterior distributions. However, the classical LMM is overparamteterized due to an insufficient number of data points. Hence, correlations between random effects could not be estimated, as indicated by perfect correlations of $-1$ and $1$. In contrast, Stan can still estimate posterior distributions for these parameters (Figure \ref{fig:lmlist}).
+We fit the same model also as a classical non-Bayesian LMM with the \texttt{lmer} function from the \texttt{lme4} package. This allows for comparing the results to the Stan results. Here, we focus on random effects. As illustrated in Figure \ref{fig:lmercomp}, the estimates of the random-effect standard deviations of the classical LMM are in agreement with the modes of the posterior distributions. However, the classical LMM hass to many parameters due to an insufficient number of data points. Hence, correlations between random effects could not be estimated, as indicated by perfect correlations of $-1$ and $1$. In contrast, Stan can still estimate posterior distributions for these parameters (Figure \ref{fig:lmlist}).
 
 \begin{figure}[!htbp]
 \centering
@@ -1054,7 +1063,7 @@ abline(v = sigma_w[2])
 \section{Inference} \label{sec:bda}
  
 Having fit a varying intercepts, varying slopes Model 3, we now explain one way to carry out statistical inference, using  credible intervals.  
-We have used this approach to draw inferences from data in previously published work (e.g., \citealt{FrankEtAl2015}, \citealt{HofmeisterVasishth2014}). There are of course other approaches possible for carrying out inference. Bayes Factors are an example; see \citet{lee2013bayesian}. Another is to define a Region of Practical Equivalence \citep{kruschke2014doing}. The reader can choose the approach they find the most appealing.
+We have used this approach to draw inferences from data in previously published work (e.g., \citealt{FrankEtAl2015}, \citealt{HofmeisterVasishth2014}). There are of course other approaches possible for carrying out inference. Bayes Factors are an example; see \citet{lee2013bayesian} and \citet{rouder2012default}. Another is to define a Region of Practical Equivalence \citep{kruschke2014doing}. The reader can choose the approach they find the most appealing.
 
 %\subsection{Inference using credible intervals} \label{subsec:posteriorintervals}
 
@@ -1093,7 +1102,7 @@ The result of fitting the varying intercepts, varying slopes Model~\ref{eq:ransl
 This leads us to conclude that the slope $\beta _1$ for relative clause type $\hbox{\texttt{so}}$ is less than zero with probability $90$\% (see line 8 in Listing~\ref{fig:Model3code}). Since $0$ is included in the credible interval, it is difficult to draw the inference that object relative clauses are read faster than subject relative clauses. However, one could perhaps still make a weak claim to that effect, especially if a lot of evidence has accumulated in other experiments that supports such a conclusion (see \citealt{VasishthetalPLoSOne2013} for a more detailed discussion).
 
 What about the correlations between varying intercepts and varying slopes for subject and for item? What can we infer from the analysis about these relationships?
-The 95\% credible interval for $\rho _u$ is $(\Sexpr{signif(omegaHPD[1],1)},\Sexpr{signif(omegaHPD[2],1)})$. Our belief that $\rho _u$ is less than zero is rather uncertain, although we can conclude that $\rho _u$ is less than zero with probability \Sexpr{signif(100*mean(omega_u<0),0)}\%. There is only weak evidence that subjects who read faster than average exhibit greater slowdowns at the head noun of object relative clauses than subjects who read slower than average. For the by-item varying intercepts and slopes, it is pretty clear that we do not have enough data (15 items) to draw any conclusions. For these data, it probably makes sense to fit a simpler model \citep{BatesEtAlParsimonious}, with only varying intercepts and slopes for subject, and only varying intercepts for items; although there is no harm done here if we fit a model with a full variance-covariance matrix for both subjects and items.
+The 95\% credible interval for $\rho _u$ is $(\Sexpr{signif(omegaHPD[1],1)},\Sexpr{signif(omegaHPD[2],1)})$. Our belief that $\rho _u$ is less than zero is rather uncertain, although we can conclude that $\rho _u$ is less than zero with probability \Sexpr{signif(100*mean(omega_u<0),0)}\%. There is only weak evidence that subjects who read faster than average exhibit greater slowdowns at the head noun of object relative clauses than subjects who read slower than average. For the by-item varying intercepts and slopes, it is pretty clear that we do not have enough data (15 items) to draw any conclusions. For these data, it probably makes sense to fit a simpler model \citep{BatesEtAlParsimonious}, with only varying intercepts and slopes for subject, and only varying intercepts for items; although there is no harm done in a Bayesian setting if we fit a model with a full variance-covariance matrix for both subjects and items.
 
 In sum, regarding our main research question, our conclusion here is that we cannot say that object relatives are harder to process than subject relatives, because the credible interval for $\beta_1$ includes $0$. However, one could argue that there is \textit{some} weak evidence in favor of the hypothesis, since the posterior probability of the parameter being negative is approximately $90$\%. 
 
@@ -1122,7 +1131,8 @@ Here,  $\mathbf{X}$ is the $N\times P$ model matrix (with $N=547$, since we have
 
 \singlespacing
 \begin{listing}
-<<matrixModelCode,echo=TRUE,eval=FALSE>>=
+% <<matrixModelCode,echo=TRUE,eval=FALSE>>=
+\begin{Verbatim}[numbers=left,frame=single,fontfamily=courier,fontsize=\footnotesize]
 # Make design matrix
 X <- unname(model.matrix(~ 1 + so, rDat))
 attr(X, "assign") <- NULL
@@ -1142,7 +1152,8 @@ stanDat <- list(N = nrow(X),
 # Fit the model
 matrixFit <- stan(file = "matrixModel.stan", data = stanDat,
                   iter = 2000, chains = 4)
-@
+\end{Verbatim}
+% @
 \caption{Matrix formulation code for running the varying intercepts, varying slopes model.}\label{fig:matrixModelCode}
 \end{listing}
 \doublespacing
