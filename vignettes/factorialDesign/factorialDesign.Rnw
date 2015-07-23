@@ -1,0 +1,300 @@
+\documentclass[doc]{apa6} % man for manuscript format, jou for journal format, doc for standard LaTeX document format
+\usepackage[natbibapa]{apacite} 
+\usepackage[american]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{csquotes}
+
+\usepackage{setspace}
+
+
+\usepackage{amsmath,amssymb,amsfonts}
+
+\usepackage{url}   % this allows us to cite URLs in the text
+\usepackage{graphicx}   % allows for graphic to float when doing jou or doc style
+\usepackage{verbatim}   % allows us to use \begin{comment} environment
+\usepackage{caption}
+%\usepackage{lscape}
+\usepackage{pdflscape}
+
+\usepackage{fancyvrb}
+
+\usepackage{newfloat}
+\DeclareFloatingEnvironment[
+%    fileext=los,
+%    listname=List of Schemes,
+%    name=Listing,
+%    placement=!htbp,
+%    within=section,
+]{listing}
+
+\title{Generalizing the linear mixed model to factorial designs}
+
+\twoauthors{Tanner Sorensen}{Shravan Vasishth}
+\twoaffiliations{University of Potsdam, Potsdam, Germany}{University of Potsdam, Potsdam, Germany, and \\
+School of Mathematics and Statistics, University of Sheffield, Sheffield, UK}
+
+
+
+%\rightheader{knitr and apa6} % for jou format
+\leftheader{Sorensen, Vasishth}
+
+
+\note{\today}
+
+\keywords{Bayesian data analysis, linear mixed models, Stan}
+
+\doublespacing
+
+\ccoppy{Draft of \today} 
+\begin{document}
+
+\maketitle
+
+<<setup,include=FALSE,cache=FALSE>>=
+library(knitr)
+library(coda)
+
+# set global chunk options, put figures into folder
+options(replace.assign=TRUE,show.signif.stars=FALSE)
+opts_chunk$set(fig.path='figures/figure-', fig.align='center', fig.show='hold')
+options(replace.assign=TRUE,width=75)
+opts_chunk$set(dev='pdf')
+library(rstan)
+set.seed(9991)
+
+# save workspace image, if you want
+#the.date <- format(Sys.time(), "%b%d%Y")
+#save.image(file=paste0("homework01-",the.date,".RData")
+@
+
+
+
+The~\citet{gibsonwu} data-set has a two-condition design. This section presents a varying intercepts, varying slopes model for a $2\times 2$ factorial design. Because of the more general matrix formulation we use here, the Stan code can be deployed with minimal changes for much more complex designs, including correlational studies. 
+
+Our example is the $2\times 2$ repeated measures factorial design of~\citet[Experiment 1]{HusainEtAl2014}, also a self-paced reading study on relative clauses. The dependent variable was the reading time $\hbox{\texttt{rt}}$ of the relative clause verb. The factors were relative clause type, which we code with the predictor $\hbox{\texttt{so}}$ ($\hbox{\texttt{so}}=+1$ for object relatives and $\hbox{\texttt{so}}=-1$ for subject relatives) and distance between the head noun and the relative clause verb, which we code with the predictor $\hbox{\texttt{dist}}$ ($\hbox{\texttt{dist}}=+1$ for far and $\hbox{\texttt{dist}}=-1$ for near). Their interaction is the product of the \texttt{dist} and \texttt{so} contrast vectors, and labeled as the predictor $\hbox{\texttt{int}}$. The $60$ subjects were speakers of Hindi, an Indo-Aryan language spoken primarily in India. The $24$ items were presented in a standard, fully balanced Latin square design. This resulted in a total of $1440$ data points ($60\times 24=1440$). The first few lines from the data frame are shown below.
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{rrrrrr}
+  \hline
+row & subj & item & so & dist & rt \\ 
+  \hline
+1 &  1 &  14 &  s & n & 1561 \\ 
+2 &  1 &  16 &  o & n & 959 \\ 
+3 &  1 &  15 &  o & f & 582 \\ 
+4 &  1 &  18 &  s & n & 294 \\ 
+5 &  1 &   4 &  o & n & 438 \\ 
+6 &  1 &  17 &  s & f & 286 \\ 
+\vdots  & \vdots & \vdots & \vdots & \vdots & \vdots \\  
+1440 &  9 & 13 &  s & f & 516 \\
+   \hline
+\end{tabular}
+\label{tab:dataframe2}
+\caption{The first six rows, and the last row, of the data-set of Husain et al.\ (2014, Experiment 1), as they appear in the data frame.}
+\end{table}
+
+The theoretical interest is in determining whether relative clause type and distance influence reading time, and whether there is an interaction between these two factors. We use Stan to determine the posterior probability distribution of the fixed effect $\beta _1$ for relative clause type, the fixed effect $\beta _2$ for distance, and their interaction $\beta _3$.
+
+We fit a varying intercepts, varying slopes model to this data-set. 
+The grand mean $\beta _0$ of $\log \hbox{\texttt{rt}}$ is adjusted by subject and by item through the varying intercepts $u_0$ and $w_0$, which are unique values for each subject and item respectively. Likewise, the three fixed effects $\beta _1$, $\beta _2$, and $\beta _3$ which are associated with the predictors $\hbox{\texttt{so}}$, $\hbox{\texttt{dist}}$, and $\hbox{\texttt{int}}$, respectively, are adjusted by the by-subject varying slopes $u_1$, $u_2$, and $u_3$ and by-item varying slopes $w_1$, $w_2$, and $w_3$. 
+
+It is more convenient to represent this model in matrix form. We build up the model specification by first noting that, for each subject,  
+the by-subject varying intercept $u_0$ and slopes $u_1$, $u_2$, and $u_3$ have a multivariate normal prior distribution with mean zero and covariance matrix $\Sigma _u$. Similarly, for each item, the by-item varying intercept $w_0$ and slopes $w_1$, $w_2$, and $w_3$ have a multivariate normal prior distribution with mean zero and covariance matrix $\Sigma _w$. We can write this as follows:
+
+\begin{equation}
+\begin{pmatrix}
+  u_0 \\ 
+  u_1 \\
+  u_2 \\
+  u_3
+\end{pmatrix}
+\sim 
+\mathrm{N} \left(
+\begin{pmatrix}
+  0 \\
+  0 \\
+  0 \\
+  0
+\end{pmatrix},
+\Sigma_{u}
+\right)  
+\quad 
+\begin{pmatrix}
+  w_0 \\ 
+  w_1 \\
+  w_2 \\
+  w_3
+\end{pmatrix}
+\sim 
+\mathrm{N} \left(
+\begin{pmatrix}
+  0 \\
+  0 \\
+  0 \\
+  0
+\end{pmatrix},
+\Sigma_{w}
+\right)
+\end{equation}
+
+The error $\varepsilon $ is assumed to have a normal distribution with mean zero and standard deviation $\sigma _e$. 
+
+\begin{listing}
+\begin{Verbatim}[numbers=left,frame=single,fontfamily=courier,fontsize=\footnotesize]
+rDat<-read.table("HusainEtAlexpt1data.txt",header=TRUE)
+rDat$subj <- with(rDat,factor(subj))
+rDat$item <- with(rDat,factor(item))
+
+X <- unname(model.matrix(~1+so+dist+int, rDat))
+
+stanDat <- within(list(),
+{
+  N<-nrow(X)
+  P <- n_u <- n_w <- ncol(X)
+  X <- X
+  Z_u <- X 
+  Z_w <- X
+  J <- length(levels(rDat$subj))
+  K <- length(levels(rDat$item))
+  rt <- rDat$rt
+  subj <- as.integer(rDat$subj)
+  item <- as.integer(rDat$item)
+}
+)
+factorialFit <- stan(file="factorialModel.stan",
+                     data=stanDat,
+                     iter=2000, chains=4)                     
+\end{Verbatim}
+\caption{Preparation of data for analyzing the Husain et al.\ data-set, and running the model.}\label{fig:preparehusaindata}
+\end{listing}
+
+\begin{listing}
+\begin{Verbatim}[numbers=left,frame=single,fontfamily=courier,fontsize=\footnotesize]
+data {
+  int<lower=0> N;               //no trials
+  int<lower=1> P;               //no fixefs
+  int<lower=0> J;               //no subjects
+  int<lower=1> n_u;             //no subj ranefs
+  int<lower=0> K;               //no items
+  int<lower=1> n_w;             //no item ranefs
+  int<lower=1,upper=J> subj[N]; //subject indicator
+  int<lower=1,upper=K> item[N]; //item indicator
+  row_vector[P] X[N];           //fixef design matrix
+  row_vector[n_u] Z_u[N];       //subj ranef design matrix
+  row_vector[n_w] Z_w[N];       //item ranef design matrix
+  vector[N] rt;                 //reading time
+}
+parameters {
+  vector[P] beta;               //fixef coefs
+  cholesky_factor_corr[n_u] L_u;  //cholesky factor of subj ranef corr matrix
+  cholesky_factor_corr[n_w] L_w;  //cholesky factor of item ranef corr matrix
+  vector<lower=0>[n_u] sigma_u; //subj ranef std
+  vector<lower=0>[n_w] sigma_w; //item ranef std
+  real<lower=0> sigma_e;        //residual std
+  vector[n_u] z_u[J];           //subj ranef
+  vector[n_w] z_w[K];           //item ranef
+}
+transformed parameters {
+  vector[n_u] u[J];             //subj ranefs
+  vector[n_w] w[K];             //item ranefs
+  {
+    matrix[n_u,n_u] Sigma_u;    //subj ranef cov matrix
+    matrix[n_w,n_w] Sigma_w;    //item ranef cov matrix
+    Sigma_u <- diag_pre_multiply(sigma_u,L_u);
+    Sigma_w <- diag_pre_multiply(sigma_w,L_w);
+    for(j in 1:J)
+      u[j] <- Sigma_u * z_u[j];
+    for(k in 1:K)
+      w[k] <- Sigma_w * z_w[k];
+  }
+}
+model {
+  //priors
+  L_u ~ lkj_corr_cholesky(2.0);
+  L_w ~ lkj_corr_cholesky(2.0);
+  for (j in 1:J)
+    z_u[j] ~ normal(0,1);
+  for (k in 1:K)
+    z_w[k] ~ normal(0,1);
+  //likelihood
+  for (i in 1:N)
+    rt[i] ~ lognormal(X[i] * beta + 
+                      Z_u[i] * u[subj[i]] + 
+                      Z_w[i] * w[item[i]], 
+                      sigma_e);
+}
+\end{Verbatim}
+\caption{Stan code for Husain et al data.}\label{fig:Stancodehusaindata}
+\end{listing}
+
+We proceed to implement the model in Stan. First we read in the data-set (see Listing~\ref{fig:preparehusaindata}).
+Instead of passing the predictors $\hbox{\texttt{so}}$, $\hbox{\texttt{dist}}$, and their interaction $\hbox{\texttt{int}}$ to \texttt{stan} as vectors, as we did with $\hbox{\texttt{so}}$ earlier, we make $\hbox{\texttt{so}}$, $\hbox{\texttt{dist}}$, and $\hbox{\texttt{int}}$ into a design matrix \texttt{X} using the function \texttt{model.matrix} available in R.\footnote{Here, we would like to acknowledge the contribution of Douglas Bates in specifying the model in this general matrix form.}
+The first column of the design matrix \texttt{X} consists of all ones. The second column is the predictor $\hbox{\texttt{so}}$ which codes the factor for relative clause type. The third column the predictor $\hbox{\texttt{dist}}$ which codes the factor for distance. The fourth column is the predictor $\hbox{\texttt{int}}$ which codes the interaction between relative clause type and distance.  The model matrix thus consists of a fully factorial $2 \times 2$ design, with blocks of this design repeated for each subject. 
+For the full data-set, we could write it very compactly in matrix form as follows:
+
+\begin{equation} \label{eq:factorialmodel}
+\mathbf{\log(rt)} = \mathbf{X}\beta + \mathbf{Z}_{u} \mathbf{u} + \mathbf{Z}_{w} \mathbf{w} + \mathbf{\varepsilon} 
+\end{equation}
+
+Here,  $\mathbf{X}$ is the $N\times P$ model matrix (with $N=1440$, since we have $1440$ data points; and $P=4$ since we have the intercept plus three other fixed effects), $\mathbf{\beta}$ is a $P\times 1$ vector of fixed effects parameters, $\mathbf{Z}_{u}$ and $\mathbf{Z}_{w}$ are the subject and item model matrices ($N\times P$), and $u$ and $w$ are the by-subject and by-item adjustments to the fixed effects estimates; these are identical to the design matrix $\mathbf{X}$ in the model with varying intercepts and varying slopes included.  For more examples of similar model specifications in Stan, see the R package \texttt{RePsychLing} on github (https://github.com/dmbates/RePsychLing).
+
+Having defined the model, we proceed to assemble the list \texttt{stanDat} of data, relying on the above matrix formulation; please refer to Listing~\ref{fig:preparehusaindata}. The number \texttt{N} of observations, the number \texttt{J} of subjects and \texttt{K} of items, the reading times \texttt{rt}, and the subject and item indicator variables \texttt{subj} and \texttt{item} are familiar from the previous models presented. The integer \texttt{P} is the number of fixed effects (four including the intercept). Model~\ref{eq:factorialmodel} includes a varying intercept $u_{0}$ and varying slopes $u_{1}$, $u_{2}$, $u_{3}$ for each subject, and so the number \texttt{n\_u} of by-subject random effects equals \texttt{P}. Likewise, Model~\ref{eq:factorialmodel} includes a varying intercept $w_{0}$ and varying slopes $w_{1}$, $w_{2}$, $w_{3}$ for each item, and so the number \texttt{n\_w} of by-item random effects also equals \texttt{P}. 
+The data block contains the corresponding variables. We declare the fixed effects design matrix \texttt{X} as an array of \texttt{N} row vectors whose components are the predictors associated with the \texttt{N} reading times. Likewise for the subject and item random effects design matrices \texttt{Z\_u} and \texttt{Z\_w}, which correspond to $\mathbf{Z}_{u}$ and $\mathbf{Z}_{w}$ respectively in Model~\ref{eq:factorialmodel}. 
+The vector \texttt{beta} contains the fixed effects $\beta _0$, $\beta _1$, $\beta _2$, and $\beta _3$. The matrices \texttt{L\_u}, \texttt{L\_w} and the arrays \texttt{z\_u}, \texttt{z\_w} of vectors (not to be confused with the design matrices \texttt{Z\_u} and \texttt{Z\_w}) will generate the varying intercepts and slopes $u_0$, \dots , $u_3$ and $w_0$, \dots , $w_3$. The vector \texttt{sigma\_u} contains the standard deviations of the by-subject varying intercepts and slopes $u_0$, \dots , $u_3$, and the vector \texttt{sigma\_w} contains the standard deviations of the by-item varying intercepts and slopes $w_0$, \ldots , $w_3$. The variable \texttt{sigma\_e} is the standard deviation $\sigma _e$ of the error $\varepsilon$.
+The transformed parameters block generates the by-subject intercepts and slopes $u_0$, \dots , $u_3$ and the by-item intercepts and slopes $w_0$, \dots, $w_3$.
+
+We place lkj priors on the random effects correlation matrices through the \texttt{lkj\_corr\_cholesky(2.0)} priors on their Cholesky factors \texttt{L\_u} and \texttt{L\_w}. We implicitly place uniform priors on the fixed effects $\beta _0$, \dots , $\beta _3$, the random effects standard deviations $\sigma _{u0}$, \dots , $\sigma _{u3}$, and $\sigma _{w0}$, \dots, $\sigma _{w3}$ and the error standard deviation $\sigma _e$ by omitting any prior specifications for them in the model block. We specify the likelihood with the probability statement that \texttt{rt[i]} is distributed log-normally with mean \texttt{X[i] * beta + Z\_u[i] * u[subj[i]] + Z\_w[i] * w[item[i]]} and standard deviation \texttt{sigma\_e}.
+The next step towards model-fitting is to pass the list \texttt{stanDat} to \texttt{stan}, which compiles a C++ program to sample from the posterior distribution of the model parameters.
+
+Figure~\ref{fig:factorialfixefposterior} plots histograms of the marginal posterior distribution of the fixed effects. The HPD interval of the fixed effect $\hat\beta _1$ for relative clause type is entirely below zero. This is evidence that object relatives are read faster than subject relatives. The HPD interval of the fixed effect $\hat\beta _2$ for distance is also entirely below zero. This is evidence of a slowdown when the verb (where reading time was measured) is closer to the head noun of the relative clause. The HPD of the interaction $\hat\beta _3$ between relative clause type and distance is greater than zero, which is evidence for a greater slowdown on subject relatives when the distance between the verb and head noun is short.
+
+\begin{figure}
+\centering
+<<fighusainresults,include=TRUE,echo=FALSE,cache=TRUE,fig.width=7,fig.height=5,out.width='0.75\\textwidth'>>=
+# Load the fixed effects model.
+load("../../data/factorialFit.Rda")
+# Extract the fixef coefs.
+beta0 <- extract(factorialFit,pars=c("beta[1]"))
+beta1 <- extract(factorialFit,pars=c("beta[2]"))
+beta2 <- extract(factorialFit,pars=c("beta[3]"))
+beta3 <- extract(factorialFit,pars=c("beta[4]"))
+# Get HPD interval for the fixef coefs.
+beta0HPD<-HPDinterval(as.mcmc(unlist(beta0)),prob=0.95)
+beta1HPD<-HPDinterval(as.mcmc(unlist(beta1)),prob=0.95)
+beta2HPD<-HPDinterval(as.mcmc(unlist(beta2)),prob=0.95)
+beta3HPD<-HPDinterval(as.mcmc(unlist(beta3)),prob=0.95)
+# Plot histograms with HPDs as dotted lines
+par(mfrow=c(2,2))
+hist(beta0$beta,freq=FALSE,col="black",border="white",main="grand mean",xlab=expression(beta[0]))
+abline(v=beta0HPD,lty=2,lwd=2)
+hist(beta1$beta,freq=FALSE,col="black",border="white",main="relative clause type",
+     xlim=c(-.12,.12),xlab=expression(beta[1]))
+abline(v=beta1HPD,lty=2,lwd=2)
+hist(beta2$beta,freq=FALSE,col="black",border="white",main="distance",
+     xlim=c(-.12,.12),xlab=expression(beta[2]))
+abline(v=beta2HPD,lty=2,lwd=2)
+hist(beta3$beta,freq=FALSE,col="black",border="white",main="interaction",
+     xlim=c(-.12,.12),xlab=expression(beta[3]))
+abline(v=beta3HPD,lty=2,lwd=2)
+@
+\caption{Marginal posterior distribution and HPD intervals of the fixed effects grand mean $\beta _0$, slope $\beta _1$ for relative clause type, slope $\beta _2$ for distance, and interaction $\beta _3$. All fixed effects are on the log-scale.}\label{fig:factorialfixefposterior}
+\end{figure}
+
+A major advantage of the above matrix formulation is that we do not need to write a new Stan model for a future repeated measures factorial design. All we have to do now is define the design matrix $X$ appropriately, and include it (along with appropriately defined $Z_u$ and $Z_w$ for the subjects and items random effects) as part of the data specification that is passed to Stan. 
+
+
+\clearpage
+
+\bibliographystyle{apacite}
+\bibliography{../../doc/SorensenVasishth}
+
+\clearpage
+
+\end{document}
+
+
+
+
+
+\end{document}
+
