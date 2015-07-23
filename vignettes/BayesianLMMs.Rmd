@@ -214,6 +214,45 @@ so<-ifelse(rDat$type=="obj-ext",1,-1)
 lmer(log(rt)~so+(1+so|subj)+(1+so|item),rDat)
 ```
 
+
+## Matrix formulation
+
+```{r}
+#############################################
+## ALTERNATIVE MATRIX FORMULATION OF MODEL 3
+#############################################
+
+# 1. Make design matrix.
+X <- unname(model.matrix(~ 1 + so, rDat))
+attr(X, "assign") <- NULL
+# 2. Make Stan data.
+stanDat <- list(N = nrow(X),
+                P = ncol(X),
+                n_u = ncol(X),
+                n_w = ncol(X),
+                X = X,
+                Z_u = X,
+                Z_w = X,
+                J = nlevels(rDat$subj),
+                K = nlevels(rDat$item),
+                rt = rDat$rt,
+                subj = as.integer(rDat$subj),
+                item = as.integer(rDat$item))
+# 3. Fit the model.
+matrixFit <- stan(file = "matrixModel.stan", data = stanDat,
+                  iter = 2000, chains = 4)
+# 4. Save the result.
+save(list = "matrixFit",
+     file = "../data/matrixFit.Rda",
+     compress = "xz")
+```
+
+
+
+
+
+
+
 ## Posterior predictive checks
 
 ```{r}
