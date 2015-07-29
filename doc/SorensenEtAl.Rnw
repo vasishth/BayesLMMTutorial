@@ -100,11 +100,8 @@ The purpose of this paper is to facilitate a first encounter with model specific
 We have chosen Stan as the programming language of choice (over JAGS and WinBUGS) because it is possible to fit arbitrarily complex models with Stan. For example, it is possible (if time consuming) to fit a model with $14$ fixed effects predictors and two crossed random effects by subject and item, each involving a $14\times 14$ variance-covariance matrix \citep{BatesEtAlParsimonious}; as far as we are aware,  such models cannot, as far as we know, be fit in JAGS or WinBUGS.\footnote{Whether it makes sense in general to fit such a complex model is a different issue; see \citet{Gelman14}, and \citet{BatesEtAlParsimonious} for recent discussion.}
 
 In this tutorial, 
-we take it as a given that the reader is interested in learning how to fit Bayesian linear mixed models. We do not try to explain the advantages this approach affords beyond the classical frequentist approach; for such justification, the reader is directed to the rich literature relating to a comparison between Bayesian versus frequentist statistics (such as the provocatively titled paper by \citealt{lavine1999bayesian}; and the highly accessible textbook by 
-\citealt{kruschke2014doing}). 
-We also assume that the reader is aware of Bayes' Theorem, which for our purposes amounts to the statement that the posterior distribution is proportional to the prior times the likelihood.  For the purposes of this paper, the goal of a Bayesian analysis is simply to derive the posterior distribution of each parameter of interest, given some data and prior beliefs about the distributions of the parameters.
-
-The tutorial is structured as follows. We begin by 
+we take it as a given that the reader is interested in learning how to fit Bayesian linear mixed models.
+The tutorial is structured as follows. After a short introduction to Bayesian modeling, we begin by 
 %Section~\ref{sec:modeling} 
 successively building up increasingly complex LMMs using the data-set reported by~\citet{gibsonwu}, which has a  simple two-condition design. At each step, we explain the structure of the model. The next section takes up inference for this two-condition design.  Then we demonstrate how one can fit models using the matrix formulation of the design.
 
@@ -184,7 +181,10 @@ The researcher starts to collect data. In our example, there are $n = 20$ values
 
 This toy example illustrates the central idea of Bayesian modeling. The prior reflects our knowledge of past results. In most cases, we will use so-called vague flat priors such that the posterior distribution is mainly affected by the data. The resulting posterior distribution allows for calculating credible intervals of true parameter values (see below).
 
-The second advantage of Bayesian modeling concerns variance components (random effects). Fitting a large number of random effects in non-Bayesian settings requires a large amount of data. Often, the data-set is too small to fit reliable distributions of random effects \citep{BatesEtAlParsimonious}.  However, if a researcher is interested in differences between individual subjects or items (random intercepts and random slopes) or relationships between differences (correlations between variance components), Bayesian modeling can be used even if there is not enough data for inferential statistics. The resulting posterior distributions might have high variance but they still allow for calculating probabilities of true parameter values of variance components. Note that we do not intend to degrade classical LMMs but highlight possibilities of Bayesian modeling concerning random effects.
+For further explanation of the advantages this approach affords beyond the classical frequentist approach, the reader is directed to the rich literature relating to a comparison between Bayesian versus frequentist statistics (such as the provocatively titled paper by \citealt{lavine1999bayesian}; and the highly accessible textbook by 
+\citealt{kruschke2014doing}). 
+
+The second advantage of Bayesian modeling concerns variance components (random effects). Fitting a large number of random effects in non-Bayesian settings requires a large amount of data. Often, the data-set is too small to fit reliable distributions of random effects \citep{BatesEtAlParsimonious}.  However, if a researcher is interested in differences between individual subjects or items (random intercepts and random slopes) or relationships between differences (correlations between variance components), Bayesian modeling can be used even if there is not enough data for inferential statistics. The resulting posterior distributions might have high variance but they still allow for calculating probabilities of true parameter values of variance components. Note that we do not intend to critisice classical LMMs but highlight possibilities of Bayesian modeling concerning random effects.
 
 
 \section{Example 1: A two-condition repeated measures design}
@@ -1023,7 +1023,7 @@ hist(omega_w,freq=FALSE,col="black",border="white",
 
 \paragraph{Random effects in a non-Bayesian LMM}
 
-We fit the same model also as a classical non-Bayesian LMM with the \texttt{lmer} function from the \texttt{lme4} package. This allows for comparing the results to the Stan results. Here, we focus on random effects. As illustrated in Figure \ref{fig:lmercomp}, the estimates of the random-effect standard deviations of the classical LMM are in agreement with the modes of the posterior distributions. However, the classical LMM hass to many parameters due to an insufficient number of data points. Hence, correlations between random effects could not be estimated, as indicated by perfect correlations of $-1$ and $1$. In contrast, Stan can still estimate posterior distributions for these parameters (Figure \ref{fig:lmlist}).
+We fit the same model also as a classical non-Bayesian LMM with the \texttt{lmer} function from the \texttt{lme4} package. This allows for comparing the results to the Stan results. Here, we focus on random effects. As illustrated in Figure \ref{fig:lmercomp}, the estimates of the random-effect standard deviations of the classical LMM are in agreement with the modes of the posterior distributions. However, the classical LMM is overparameterized due to an insufficient number of data points. Hence, correlations between random effects could not be estimated, as indicated by perfect correlations of $-1$ and $1$. In contrast, Stan can still estimate posterior distributions for these parameters (Figure \ref{fig:lmlist}).
 
 \begin{figure}[!htbp]
 \centering
