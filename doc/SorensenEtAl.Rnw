@@ -74,6 +74,9 @@ options(replace.assign=TRUE,width=75)
 opts_chunk$set(dev='pdf')
 options(digits = 2)
 library(rstan)
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+
 set.seed(9991)
 
 # save workspace image, if you want
