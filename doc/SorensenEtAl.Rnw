@@ -265,9 +265,15 @@ rDat <- read.table("gibsonwu2012data.txt", header = TRUE)
 # subset critical region:
 rDat <- subset(rDat, region == "headnoun")
 
+# convert subjects and items to factors
+rDat$subj <- factor(rDat$subj)
+rDat$item <- factor(rDat$item)
+# contrast coding of type (-1 vs. 1)
+rDat$so <- ifelse(rDat$type == "subj-ext", -1, 1)
+
 # create data as list for Stan, and fit model:
-stanDat <- list(rt = rDat$rt, so = rDat$type, N = nrow(rDat))
-library(stan)
+stanDat <- list(rt = rDat$rt, so = rDat$so, N = nrow(rDat))
+library(rstan)
 fixEfFit <- stan(file = "fixEf.stan", data = stanDat,
                  iter = 2000, chains = 4)
 
@@ -468,8 +474,8 @@ For the following discussion, please consult Listing~\ref{fig:Model2code} for th
 % <<Model2code, eval=FALSE>>=
 \begin{Verbatim}[numbers=left,frame=single,fontfamily=courier,fontsize=\footnotesize]
 # format data for Stan:
-stanDat <- list(subj = as.integer(factor(rDat$subj)),
-                item = as.integer(factor(rDat$item)),
+stanDat <- list(subj = as.integer(rDat$subj),
+                item = as.integer(rDat$item),
                 rt = rDat$rt,
                 so = rDat$so,
                 N = nrow(rDat),
