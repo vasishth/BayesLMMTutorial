@@ -191,7 +191,7 @@ curve(dnorm(x, mean = mstar1, sd = sqrt(vstar1)), add = TRUE, lty = 4)
 \label{fig:bayes}
 \end{figure}
 
-The researcher starts to collect data. In our example, there are $n = 20$ values with a sample mean of $\bar x = 100$ and a standard deviation of $\sigma = 40$. The corresponding likelihood distribution is displayed in Figure \ref{fig:bayes} (dashed line). The resulting posterior distribution (dash-dot line) is a result of prior and likelihood. Given the prior with the large variance (left-hand panel), the posterior is largely influenced by the data. If the prior has a lower variance (right-hand panel), its influence on the posterior is much stronger resulting is a stroger shift towards the prior's mean.
+The researcher starts to collect data. In our example, there are $n = 20$ values with a sample mean of $\bar x = 100$ and a standard deviation of $\sigma = 40$. The corresponding likelihood distribution is displayed in Figure \ref{fig:bayes} (dashed line). The resulting posterior distribution (dash-dot line) is a result of prior and likelihood. Given the prior with the large variance (left-hand panel), the posterior is largely influenced by the data. If the prior has a lower variance (right-hand panel), its influence on the posterior is much stronger resulting in a stronger shift towards the prior's mean.
 
 This toy example illustrates the central idea of Bayesian modeling. The prior reflects our knowledge of past results. In most cases, we will use so-called vague flat priors such that the posterior distribution is mainly affected by the data. The resulting posterior distribution allows for calculating credible intervals of true parameter values (see below).
 
