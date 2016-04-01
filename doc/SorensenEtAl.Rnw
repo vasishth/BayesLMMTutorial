@@ -1,4 +1,4 @@
-\documentclass[doc]{apa6} % man for manuscript format, jou for journal format, doc for standard LaTeX document format
+\documentclass[man, floatsintext]{apa6} % man for manuscript format, jou for journal format, doc for standard LaTeX document format
 \usepackage[natbibapa]{apacite} 
 \usepackage[american]{babel}
 \usepackage[utf8]{inputenc}
@@ -35,9 +35,14 @@ A tutorial for psychologists, linguists, and cognitive scientists}
 
 \threeauthors{Tanner Sorensen}{Sven Hohenstein}{Shravan Vasishth}
 
-\threeaffiliations{University of Potsdam, Potsdam, Germany}
-{University of Potsdam, Potsdam, Germany}
-{University of Potsdam, Potsdam, Germany, and \\
+\threeaffiliations{
+University of Potsdam, Potsdam, Germany
+}
+{
+University of Potsdam, Potsdam, Germany
+}
+{
+University of Potsdam, Potsdam, Germany, and \\
 School of Mathematics and Statistics, University of Sheffield, Sheffield, UK}
 
 % Based off of code provided in a question by Melvin Roest on tex.stackexchange.com
@@ -46,7 +51,13 @@ School of Mathematics and Statistics, University of Sheffield, Sheffield, UK}
 %\rightheader{knitr and apa6} % for jou format
 \leftheader{Sorensen, Hohenstein, Vasishth}
 
-\authornote{Please send correspondence to \{tanner.sorensen,sven.hohenstein,vasishth\}@uni-potsdam.de.}
+\authornote{
+Please send correspondence to \{tanner.sorensen,sven.hohenstein,vasishth\}@uni-potsdam.de.
+
+The authors' orcid IDs are: 0000-0002-3111-9974 (Sorensen), 0000-0002-9708-1593 (Hohenstein), and 0000-0003-2027-1994 (Vasishth).
+
+All authors have read and approved the final manuscript, and they have no conflicts of interest with respect to their authorship or the publication of this article. Furthermore, the authors did not benefit from fundings.}
+
 \note{\today}
 
 % \journal{Submitted to Behavioral Methods}
@@ -54,7 +65,7 @@ School of Mathematics and Statistics, University of Sheffield, Sheffield, UK}
 \keywords{Bayesian data analysis, linear mixed models, Stan}
 
 \doublespacing
-
+\pagebreak
 \abstract{With the arrival of the R packages \texttt{nlme} and \texttt{lme4}, linear mixed models (LMMs) have come to be widely used in experimentally-driven areas like psychology, linguistics, and cognitive science. This tutorial provides a practical introduction to fitting LMMs in a Bayesian framework using the probabilistic programming language Stan. We choose Stan (rather than WinBUGS or JAGS) because it provides an elegant and scalable framework for fitting models in most of the standard applications of LMMs. We ease the reader into fitting increasingly complex LMMs, first using a two-condition repeated measures self-paced reading study, followed by a more complex $2\times 2$ repeated measures factorial design that can be generalized to much more complex designs.}
 
 \ccoppy{Draft of \today}
@@ -93,7 +104,7 @@ set.seed(9991)
 
 Linear mixed models, or hierarchical/multilevel linear models, have become the main workhorse of experimental research in psychology, linguistics, and cognitive science, where repeated measures designs are the norm.
 Within the programming environment R~\citep{R}, 
-the \texttt{nlme} package \citep{pinheirobates} and its successor, \texttt{lme4} \citep{batesetal2014b} have revolutionized the use of linear mixed models (LMMs) due to their simplicity and speed: one can fit fairly complicated models relatively quickly, often with a single line of code. A great advantage of LMMs over traditional approaches such as repeated measures ANOVA and paired t-tests is that there is no need to aggregate over subjects and items to compute two sets of F-scores (or several t-scores) separately; a single model can take all sources of variance into account simultaneously. Furthermore, comparisons between conditions can easily be implemented in a single model through appropriate contrast coding.
+the \texttt{nlme} package \citep{pinheirobates} and its successor, \texttt{lme4} \citep{Bates2015} have revolutionized the use of linear mixed models (LMMs) due to their simplicity and speed: one can fit fairly complicated models relatively quickly, often with a single line of code. A great advantage of LMMs over traditional approaches such as repeated measures ANOVA and paired t-tests is that there is no need to aggregate over subjects and items to compute two sets of F-scores (or several t-scores) separately; a single model can take all sources of variance into account simultaneously. Furthermore, comparisons between conditions can easily be implemented in a single model through appropriate contrast coding.
 
 Other important developments related to LMMs have been unfolding in  computational statistics.
 Specifically, probabilistic programming languages like WinBUGS \citep{lunn2000winbugs}, JAGS \citep{plummer2011jags} and Stan \citep{stan-manual:2014}, among others, have  made it possible to fit Bayesian LMMs quite easily. However, one prerequisite for using these programming languages is that some background statistical knowledge is needed before one can define the model. This difficulty is well-known; for example, \citet[4]{spiegelhalter2004bayesian} write: ``Bayesian statistics has a (largely deserved) reputation for being mathematically challenging and difficult to put into practice\dots''. 
@@ -108,7 +119,7 @@ The tutorial is structured as follows. After a short introduction to Bayesian mo
 %Section~\ref{sec:modeling} 
 successively building up increasingly complex LMMs using the data-set reported by~\citet{gibsonwu}, which has a  simple two-condition design. At each step, we explain the structure of the model. The next section takes up inference for this two-condition design.  Then we demonstrate how one can fit models using the matrix formulation of the design.
 
-This paper was written using a literate programming tool, \texttt{knitr} \citep{xie2013knitr}; this integrates documentation for the accompanying code with the paper.
+This paper was written using a literate programming tool, \texttt{knitr} \citep{xie2015knitr}; this integrates documentation for the accompanying code with the paper.
 The \texttt{knitr} file that generated this paper, as well as all the code and data used in this tutorial, can be downloaded from our website: 
 
 \url{http://www.ling.uni-potsdam.de/~vasishth/statistics/BayesLMMs.html}
@@ -369,7 +380,7 @@ This is shown in the rightmost column of the model summary, see Table~\ref{tab:q
 
 Having satisfied ourselves that the chains have converged, we turn to examine this posterior distribution. (If there is an indication that convergence has not happened, then, assuming that the model has no errors in it, increasing the number of samples usually resolves the issue.)
 
-\begin{table}[htdp]
+\begin{table}[htp]
 \begin{center}
 \begin{tabular}{crrrr}
 \hline
@@ -572,7 +583,7 @@ Here, notice that the $i$-th row in the statement for $\mu$ identifies the subje
 
 The posterior distributions of each of the parameters is summarized in Table~\ref{tab:Model2posterior}. The $\hat R$ values suggest that model has converged. Note also that compared to Model \ref{eq:fixef}, the estimate of $\sigma_e$ is smaller; this is because the other two variance components are now being estimated as well. Note that the 95\% credible interval for the estimate $\hat\beta_1$ includes $0$; thus, there is some evidence that object relatives are easier than subject relatives, but we cannot exclude the possibility that there is no difference in the reading times between the two relative clause types.
 
-\begin{table}[htdp]
+\begin{table}[htp]
 \begin{center}
 \begin{tabular}{crrrr}
 \hline
@@ -949,7 +960,7 @@ The statement \texttt{to\_vector(z\_u) $\sim $ normal(0,1)} places a normal dist
 
 We can now fit the varying intercepts, varying slopes Model 3; see Listing~\ref{fig:Model3code} for the code. We see in the model summary in Table~\ref{tab:Model3posterior} that the model has converged, and that the credible intervals of the parameter of interest, $\beta_1$, still include $0$. In fact, the posterior probability of the parameter being less than $0$ is now $90$\% (this information can be extracted as shown in Listing~\ref{fig:Model3code}, lines 6--8). 
 
-\begin{table}[htdp]
+\begin{table}[htp]
 \begin{center}
 \begin{tabular}{crrrr}
 \hline
@@ -1241,19 +1252,19 @@ A major advantage of the above matrix formulation is that we do not need to writ
 \section{Concluding remarks, and further reading}
 
 We hope that this tutorial has given the reader a flavor of what it would be like to fit Bayesian linear mixed models. There is of course much more to say on the topic, and we hope that the interested reader will take a look at some of the excellent books that have recently come out. We suggest below a sequence of reading that we found helpful.
-A good first general textbook is by \citet{gelmanhill07}; it begins with the frequentist approach and only later transitions to Bayesian models. The forthcoming book by \citet{rethinking} is also excellent. 
+A good first general textbook is by \citet{gelmanhill07}; it begins with the frequentist approach and only later transitions to Bayesian models. The book by \citet{rethinking} is also excellent. 
 For those looking for a psychology-specific introduction, the books by \citet{kruschke2014doing} and \citet{lee2013bayesian} are to be recommended, although for the latter the going might be easier if the reader has already looked at \citet{gelmanhill07}.
 As a second book, \citet{lunn2012bugs} is recommended; it provides many interesting and useful examples using the BUGS language, which are discussed in exceptionally clear language. Many of these books use the BUGS syntax~\citep{lunn2000winbugs}, which the probabilistic programming language JAGS \citep{plummer2011jags} also adopts; however, Stan code for these books is slowly becoming available on the Stan home page (\url{https://github.com/stan-dev/example-models/wiki}). 
 For those with introductory calculus, a slightly more technical introduction to Bayesian methods by~\citet{lynch2007introduction} is an excellent choice. Finally, the textbook by~\citet{Gelman14} is the definitive modern guide, and provides a more advanced treatment. 
 
 \section*{Acknowledgements}
 
-We are grateful to the developers of Stan (in particular, Andrew Gelman, Bob Carpenter) and members of the Stan mailing list for their advice regarding model specification. Douglas Bates and Reinhold Kliegl have helped considerably over the years in improving our understanding of LMMs from a frequentist perspective. We also thank Edward Gibson for releasing his published data. Titus von der Malsburg and Bruno Nicenboim provided useful comments on a draft. 
+We are grateful to the developers of Stan (in particular, Andrew Gelman, Bob Carpenter) and members of the Stan mailing list for their advice regarding model specification. Douglas Bates and Reinhold Kliegl have helped considerably over the years in improving our understanding of LMMs from a frequentist perspective. We also thank Edward Gibson for releasing his published data. Titus von der Malsburg and Bruno Nicenboim provided useful comments on a draft.
 
 \clearpage
 
 \bibliographystyle{apacite}
-\bibliography{SorensenVasishth}
+\bibliography{SorensenEtAl}
 
 \clearpage
 
