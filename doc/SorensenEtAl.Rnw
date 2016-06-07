@@ -141,16 +141,16 @@ Bayesian modeling has two major advantages over frequentist analysis with linear
 Bayesian modeling is based on Bayes' Theorem. It can be seen as a way of understanding how the probability that a hypothesis is true is affected by new data. In mathematical notation,
 
 $$
-P(H|D) = \frac{P(D|H) P(H)}{P(D)},
+P(H\mid D) = \frac{P(D\mid H) P(H)}{P(D)},
 $$
 
 $H$ is the hypothesis we are interested in, and $D$ represents new data. Since $D$ is fixed for a given data-set, the theorem can be rephrased as,
 
 $$
-P(H|D) \propto P(D|H) P(H).
+P(H\mid D) \propto P(D\mid H) P(H).
 $$
 
-The \emph{posterior} probability that the hypothesis is true given new data, $P(H|D)$, is proportional to the product of the \emph{likelihood} of the new data given the hypothesis, $P(D|H)$, and the \emph{prior} probability of the hypothesis, $P(H)$. 
+The \emph{posterior} probability that the hypothesis is true given new data, $P(H\mid D)$, is proportional to the product of the \emph{likelihood} of the new data given the hypothesis, $P(D\mid H)$, and the \emph{prior} probability of the hypothesis, $P(H)$. 
 
 For the purposes of this paper, the goal of a Bayesian analysis is simply to derive the posterior distribution of each parameter of interest, given some data and prior beliefs about the distributions of the parameters. The following example illustrates how the posterior belief depends on the properties of the likelihood and the prior. Before collecting data, a researcher has some hypothesis concerning the distribution of the response variable in an experiment. The reseacher's belief can be expressed via prior distributions. A normal distribution with a mean value of $\mu_0 = 80$ represents the prior distribution. The left-hand panel of Figure \ref{fig:bayes} displays the prior distribution with a relatively large variance of $\sigma^2_0 = 1000$ (solid line). The large variance reflects the researcher's uncertainty concerning the true mean of the distribution. Alternatively, the researcher may be very certain concerning $\mu_0$, as represented by the prior distribution in the right-hand panel of Figure \ref{fig:bayes} (solid line). This prior has the same mean but a much lower variance of $\sigma^2_0 = 100$.
 
