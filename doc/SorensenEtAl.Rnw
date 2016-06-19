@@ -122,7 +122,7 @@ successively building up increasingly complex LMMs using the data-set reported b
 This paper was written using a literate programming tool, \texttt{knitr} \citep{xie2015knitr}; this integrates documentation for the accompanying code with the paper.
 The \texttt{knitr} file that generated this paper, as well as all the code and data used in this tutorial, can be downloaded from our website: 
 
-\url{http://www.ling.uni-potsdam.de/~vasishth/statistics/BayesLMMs.html}
+\url{https://www.ling.uni-potsdam.de/~vasishth/statistics/BayesLMMs.html}
 
 \noindent
 In addition, the source code for the paper, all R code, and data are available on github at:
@@ -152,7 +152,7 @@ $$
 
 The \emph{posterior} probability that the hypothesis is true given new data, $P(H\mid D)$, is proportional to the product of the \emph{likelihood} of the new data given the hypothesis, $P(D\mid H)$, and the \emph{prior} probability of the hypothesis, $P(H)$. 
 
-For the purposes of this paper, the goal of a Bayesian analysis is simply to derive the posterior distribution of each parameter of interest, given some data and prior beliefs about the distributions of the parameters. The following example illustrates how the posterior belief depends on the properties of the likelihood and the prior. Before collecting data, a researcher has some hypothesis concerning the distribution of the response variable in an experiment. The reseacher's belief can be expressed via prior distributions. A normal distribution with a mean value of $\mu_0 = 80$ represents the prior distribution. The left-hand panel of Figure \ref{fig:bayes} displays the prior distribution with a relatively large variance of $\sigma^2_0 = 1000$ (solid line). The large variance reflects the researcher's uncertainty concerning the true mean of the distribution. Alternatively, the researcher may be very certain concerning $\mu_0$, as represented by the prior distribution in the right-hand panel of Figure \ref{fig:bayes} (solid line). This prior has the same mean but a much lower variance of $\sigma^2_0 = 100$.
+For the purposes of this paper, the goal of a Bayesian analysis is simply to derive the posterior distribution of each parameter of interest, given some data and prior beliefs about the distributions of the parameters. The following example illustrates how the posterior belief depends on the properties of the likelihood and the prior. Before collecting data, a researcher has some hypothesis concerning the distribution of the response variable $x$ in an experiment. The reseacher's belief can be expressed via prior distributions. A normal distribution with a mean value of $\mu_0 = 80$ represents the prior distribution. The left-hand panel of Figure \ref{fig:bayes} displays the prior distribution with a relatively large variance of $\sigma^2_0 = 1000$ (solid line). The large variance reflects the researcher's uncertainty concerning the true mean of the distribution. Alternatively, the researcher may be very certain concerning $\mu_0$, as represented by the prior distribution in the right-hand panel of Figure \ref{fig:bayes} (solid line). This prior has the same mean but a much lower variance of $\sigma^2_0 = 100$.
 
 \begin{figure}
 \centering
@@ -195,8 +195,8 @@ The researcher starts to collect data. In our example, there are $n = 20$ values
 
 This toy example illustrates the central idea of Bayesian modeling. The prior reflects our knowledge of past results. In most cases, we will use so-called vague flat priors such that the posterior distribution is mainly affected by the data. The resulting posterior distribution allows for calculating credible intervals of true parameter values (see below).
 
-For further explanation of the advantages this approach affords beyond the classical frequentist approach, the reader is directed to the rich literature relating to a comparison between Bayesian versus frequentist statistics (such as the provocatively titled paper by \citealt{lavine1999bayesian}; and the highly accessible textbook by 
-\citealt{kruschke2014doing}). 
+For further explanation of the advantages this approach affords beyond the classical frequentist approach, the reader is directed to the rich literature relating to a comparison between Bayesian versus frequentist statistics (such as the provocatively titled paper by \citealp{lavine1999bayesian}; and the highly accessible textbook by 
+\citealp{kruschke2014doing}). 
 
 The second advantage of Bayesian modeling concerns variance components (random effects). Fitting a large number of random effects in non-Bayesian settings requires a large amount of data. Often, the data-set is too small to fit reliable distributions of random effects \citep{BatesEtAlParsimonious}.  However, if a researcher is interested in differences between individual subjects or items (random intercepts and random slopes) or relationships between differences (correlations between variance components), Bayesian modeling can be used even if there is not enough data for inferential statistics. The resulting posterior distributions might have high variance but they still allow for calculating probabilities of true parameter values of variance components. Note that we do not intend to critisice classical LMMs but highlight possibilities of Bayesian modeling concerning random effects.
 
@@ -240,7 +240,7 @@ to a varying intercepts model
 %(Section~\ref{subsec:ranint}) 
 and finally to a varying intercepts, varying slopes model 
 %(Section~\ref{subsec:ranslp})
-(the ``maximal model'' of \citealt{barr2011random}). The result is a probability model that expresses how the dependent variable, the reading time labeled $\hbox{\texttt{rt}}$, was generated in the experiment of~\citet{gibsonwu}. 
+(the ``maximal model'' of \citealp{barr2011random}). The result is a probability model that expresses how the dependent variable, the reading time labeled $\hbox{\texttt{rt}}$, was generated in the experiment of~\citet{gibsonwu}. 
 
 As mentioned above, 
 the goal of Bayesian modeling is to derive the \textit{posterior probability distribution} of the model parameters from a \textit{prior probability distribution} and a \textit{likelihood function}. Stan makes it easy to compute this posterior distribution of each parameter of interest. 
@@ -361,7 +361,7 @@ Besides the number of iterations, we specified sampling in four different chains
 
 
 \paragraph{Evaluating model convergence and summarizing results}
-The first step after running the above function should be to look at the \textit{trace plot} of each chain after warmup, using the command shown in Listing~\ref{fig:Model1code}, lines 13 and 14 (function \texttt{traceplot}). We choose the parameters $\beta_i$ and $\sigma_e$ (\texttt{pars = c("beta", "sigma\_e")}) and omit the warmup samples (\texttt{inc\_warmup = FALSE)}).
+The first step after running the above function should be to look at the \textit{trace plot} of each chain after warmup, using the command shown in Listing~\ref{fig:Model1code}, lines 13 and 14 (function \texttt{traceplot}). We choose the parameters $\beta_i$ and $\sigma_e$ (\texttt{pars = c("beta", "sigma\_e")}) and omit the warmup samples (\texttt{inc\_warmup = FALSE}).
 A trace plot has the chains plotted against the sample ID. In Figure~\ref{fig:traceplot}, we see three different chains plotted against sample number going from $1001$ to $2000$. If the trace plot looks like a ``fat, hairy caterpillar'' \citep{lunn2012bugs} which does not bend, this suggests that the chains have converged to the posterior distribution.
 
 \begin{figure}
@@ -450,7 +450,7 @@ for(i in 1:3)
 \end{figure}
 
 Of immediate interest is the marginal distribution of the slope $\beta _1$. 
-Figure~\ref{fig:jointposterior} suggests that the posterior probability density of $\beta _1$ is mainly spread over the interval $(-\infty,0)$. One quantitative way to assess the posterior probability distribution is to examine its quantiles; see Table~\ref{tab:quantilesGibsonWu}. Here, it is useful to define the concept of the \textit{credible interval}. The $(1-\alpha )$\% credible interval contains $(1-\alpha )$\% of the posterior probability density. Unlike the $(1-\alpha )$\% confidence interval from the frequentist setting, the $(1-\alpha )$\% credible interval represents the range within which we are $(1-\alpha )$\% certain that the true value of the parameter lies, given the prior and the data (see \citealt{morey2015fallacy} for further discussion on CIs vs credible intervals). A common convention is to use the interval ranging from the $2.5$th to $97.5$th percentiles. We follow this convention and 95\% credible intervals in Table~\ref{tab:quantilesGibsonWu}. The last lines of \ref{fig:Model1code} illustrate how these quantiles of the posterior distribution of $\beta_1$ (\texttt{beta[2]}) can be computed.
+Figure~\ref{fig:jointposterior} suggests that the posterior probability density of $\beta _1$ is mainly spread over the interval $(-\infty,0)$. One quantitative way to assess the posterior probability distribution is to examine its quantiles; see Table~\ref{tab:quantilesGibsonWu}. Here, it is useful to define the concept of the \textit{credible interval}. The $(1-\alpha )$\% credible interval contains $(1-\alpha )$\% of the posterior probability density. Unlike the $(1-\alpha )$\% confidence interval from the frequentist setting, the $(1-\alpha )$\% credible interval represents the range within which we are $(1-\alpha )$\% certain that the true value of the parameter lies, given the prior and the data (see \citealp{morey2015fallacy} for further discussion on CIs vs credible intervals). A common convention is to use the interval ranging from the $2.5$th to $97.5$th percentiles. We follow this convention and 95\% credible intervals in Table~\ref{tab:quantilesGibsonWu}. The last lines of \ref{fig:Model1code} illustrate how these quantiles of the posterior distribution of $\beta_1$ (\texttt{beta[2]}) can be computed.
 
 The samples of $\beta_1$ suggests that approximately
 \Sexpr{round(mean(beta1<0),digits=2)*100}\% of the posterior probability density is below zero, suggesting that there is some evidence that object relatives are easier to process than subject relatives in Chinese, given the Gibson and Wu data. However, since the 95\% credible interval includes 0, we may be reluctant to draw this conclusion.
@@ -563,7 +563,7 @@ The vector \texttt{u} has varying intercepts for subjects. Likewise, the vector 
 In R, we pass the list \texttt{stanDat} of data to \texttt{stan}, which compiles a C++ program to sample from the posterior distribution of Model~\ref{eq:ranint}.
 Stan samples from the posterior distribution of the model parameters, including the varying intercepts $u_{0j}$ and $w_{0k}$ for each subject $j \in \{1,\ldots ,J\}$ and item $k \in \{1,\ldots ,K\}$. 
 
-It may be helpful to rewrite the model in mathematical form following the Stan syntax (\citealt{gelmanhill07} use a similar notation); the Stan statements are slightly different from the way that we expressed Model~\ref{eq:ranint}. Defining $i$ as the row id in the data, i.e., $i \in  \{1,\dots, 547\}$, we can write:
+It may be helpful to rewrite the model in mathematical form following the Stan syntax (\citealp{gelmanhill07} use a similar notation); the Stan statements are slightly different from the way that we expressed Model~\ref{eq:ranint}. Defining $i$ as the row id in the data, i.e., $i \in  \{1,\dots, 547\}$, we can write:
 
 \begin{equation}
 \begin{split}
@@ -603,7 +603,7 @@ $\hat \sigma_w$ & 0.20  &       0.12  &  0.32 &     1\\
 \subsection{Varying Intercepts, Varying Slopes Mixed Effects Model}\label{subsec:ranslp}
 
 Consider now that subjects who are faster than average (i.e., who have a negative varying intercept) may exhibit greater slowdowns when they read subject relatives compared to object relatives. Similarly, it is in principle possible that items which are read faster (i.e., which have a large negative varying intercept) may show a greater slowdown in subject relatives than object relatives. The opposite situation could also hold: faster subjects may show smaller SR-OR effects, or items read faster may show smaller SR-OR effects.
-Although such individual-level variability was not of interest in the original paper by Gibson and Wu, it could be of theoretical interest  (see, for example, \citealt{kliegl2010experimental}). Furthermore, as \citet{barr2011random} point out, it is in principle desirable to include a fixed effect factor in the random effects as a varying slope if the experiment design is such that subjects see both levels of the factor (cf.\ \citealt{BatesEtAlParsimonious}).
+Although such individual-level variability was not of interest in the original paper by Gibson and Wu, it could be of theoretical interest  (see, for example, \citealp{kliegl2010experimental}). Furthermore, as \citet{barr2011random} point out, it is in principle desirable to include a fixed effect factor in the random effects as a varying slope if the experiment design is such that subjects see both levels of the factor (cf.\ \citealp{BatesEtAlParsimonious}).
 
 In order to express this structure in the LMM, we must make two changes in the varying intercepts Model~\ref{eq:ranint}. 
 
@@ -854,7 +854,7 @@ mean(beta1 < 0)
 data {
   int<lower=1> N;                  //number of data points
   real rt[N];                      //reading time
-  real<lower=-1, upper=1> so[N];    //predictor
+  real<lower=-1, upper=1> so[N];   //predictor
   int<lower=1> J;                  //number of subjects
   int<lower=1> K;                  //number of items
   int<lower=1, upper=J> subj[N];   //subject id
@@ -1083,7 +1083,7 @@ abline(v = sigma_w[2])
 \section{Inference} \label{sec:bda}
  
 Having fit a varying intercepts, varying slopes Model 3, we now explain one way to carry out statistical inference, using  credible intervals.  
-We have used this approach to draw inferences from data in previously published work (e.g., \citealt{FrankEtAl2015}, \citealt{HofmeisterVasishth2014}). There are of course other approaches possible for carrying out inference. Bayes Factors are an example; see \citet{lee2013bayesian} and \citet{rouder2012default}. Another is to define a Region of Practical Equivalence \citep{kruschke2014doing}. The reader can choose the approach they find the most appealing.
+We have used this approach to draw inferences from data in previously published work (e.g., \citealp{FrankEtAl2015}, \citealp{HofmeisterVasishth2014}). There are of course other approaches possible for carrying out inference. Bayes Factors are an example; see \citet{lee2013bayesian} and \citet{rouder2012default}. Another is to define a Region of Practical Equivalence \citep{kruschke2014doing}. The reader can choose the approach they find the most appealing.
 
 %\subsection{Inference using credible intervals} \label{subsec:posteriorintervals}
 
@@ -1119,7 +1119,7 @@ abline(v=omegaHPD,lty=2,lwd=2)
 \end{figure}
 
 The result of fitting the varying intercepts, varying slopes Model~\ref{eq:ranslp} is the posterior distribution of the model parameters. As mentioned above in connection with Models 1-3, direct inference from the posterior distributions is possible. For instance, we can find the posterior probability with which the fixed intercept $\beta _1$ or the correlation $\rho _u$ between by-subject varying intercepts and slopes take on any given value by consulting the marginal posterior distributions whose histograms are shown in Figure~\ref{fig:hpdinterval}. The information conveyed by such graphs can be sharpened by using the $95$\% credible interval, mentioned earlier.  Approximately $95$\% of the posterior density of $\beta _1$ lies between the $2.5$ percentile \Sexpr{signif(quantile(beta1,probs=.025),2)} and the $97.5$ percentile \Sexpr{signif(quantile(beta1,probs=.975),2)}.
-This leads us to conclude that the slope $\beta _1$ for relative clause type $\hbox{\texttt{so}}$ is less than zero with probability $90$\% (see line 8 in Listing~\ref{fig:Model3code}). Since $0$ is included in the credible interval, it is difficult to draw the inference that object relative clauses are read faster than subject relative clauses. However, one could perhaps still make a weak claim to that effect, especially if a lot of evidence has accumulated in other experiments that supports such a conclusion (see \citealt{VasishthetalPLoSOne2013} for a more detailed discussion).
+This leads us to conclude that the slope $\beta _1$ for relative clause type $\hbox{\texttt{so}}$ is less than zero with probability $90$\% (see line 8 in Listing~\ref{fig:Model3code}). Since $0$ is included in the credible interval, it is difficult to draw the inference that object relative clauses are read faster than subject relative clauses. However, one could perhaps still make a weak claim to that effect, especially if a lot of evidence has accumulated in other experiments that supports such a conclusion (see \citealp{VasishthetalPLoSOne2013} for a more detailed discussion).
 
 What about the correlations between varying intercepts and varying slopes for subject and for item? What can we infer from the analysis about these relationships?
 The 95\% credible interval for $\rho _u$ is $(\Sexpr{signif(omegaHPD[1],1)},\Sexpr{signif(omegaHPD[2],1)})$. Our belief that $\rho _u$ is less than zero is rather uncertain, although we can conclude that $\rho _u$ is less than zero with probability \Sexpr{signif(100*mean(omega_u<0),0)}\%. There is only weak evidence that subjects who read faster than average exhibit greater slowdowns at the head noun of object relative clauses than subjects who read slower than average. For the by-item varying intercepts and slopes, it is pretty clear that we do not have enough data (15 items) to draw any conclusions. For these data, it probably makes sense to fit a simpler model \citep{BatesEtAlParsimonious}, with only varying intercepts and slopes for subject, and only varying intercepts for items; although there is no harm done in a Bayesian setting if we fit a model with a full variance-covariance matrix for both subjects and items.
@@ -1269,12 +1269,3 @@ We are grateful to the developers of Stan (in particular, Andrew Gelman, Bob Car
 \clearpage
 
 \end{document}
-%\appendix
-
-
-
-
-
-
-\end{document}
-
