@@ -109,9 +109,9 @@ the \texttt{nlme} package \citep{pinheirobates} and its successor, \texttt{lme4}
 Other important developments related to LMMs have been unfolding in  computational statistics.
 Specifically, probabilistic programming languages like WinBUGS \citep{lunn2000winbugs}, JAGS \citep{plummer2011jags} and Stan \citep{stan-manual:2014}, among others, have  made it possible to fit Bayesian LMMs quite easily. However, one prerequisite for using these programming languages is that some background statistical knowledge is needed before one can define the model. This difficulty is well-known; for example, \citet[4]{spiegelhalter2004bayesian} write: ``Bayesian statistics has a (largely deserved) reputation for being mathematically challenging and difficult to put into practice\dots''. 
 
-The purpose of this paper is to facilitate a first encounter with model specification in one of these programming languages, Stan. The tutorial is aimed primarily at psychologists, linguists, and cognitive scientists who have used \texttt{lme4} to fit models to their data, but may have only a basic knowledge of the underlying LMM machinery. A diagnostic test is that they may not be able to answer some or all of these questions: what is a design matrix; what is contrast coding; what is a random effects variance-covariance matrix in a linear mixed model? Our tutorial is not intended for statisticians or psychology researchers who could, for example, write their own Markov Chain Monte Carlo samplers in R or C++ or the like; for them, the Stan manual is the optimal starting point. The present tutorial attempts to ease the beginner into their first steps towards fitting Bayesian linear mixed models. More detailed presentations about linear mixed models are available in several textbooks; references are provided at the end of this tutorial. 
+The purpose of this paper is to facilitate a first encounter with model specification in one of these programming languages, Stan. The tutorial is aimed primarily at psychologists, linguists, and cognitive scientists who have used \texttt{lme4} to fit models to their data, but may have only a basic knowledge of the underlying LMM machinery. A diagnostic test is that they may not be able to answer some or all of these questions: what is a design matrix; what is contrast coding; what is a random effects variance-covariance matrix in a linear mixed model? Our tutorial is not intended for statisticians or psychology researchers who could, for example, write their own Markov Chain Monte Carlo (MCMC) samplers in R or C++ or the like; for them, the Stan manual is the optimal starting point. The present tutorial attempts to ease the beginner into their first steps towards fitting Bayesian linear mixed models. More detailed presentations about linear mixed models are available in several textbooks; references are provided at the end of this tutorial. 
 
-We have chosen Stan as the programming language of choice (over JAGS and WinBUGS) because it is possible to fit arbitrarily complex models with Stan. For example, it is possible (if time consuming) to fit a model with $14$ fixed effects predictors and two crossed random effects by subject and item, each involving a $14\times 14$ variance-covariance matrix \citep{BatesEtAlParsimonious}; as far as we are aware,  such models cannot, as far as we know, be fit in JAGS or WinBUGS.\footnote{Whether it makes sense in general to fit such a complex model is a different issue; see \citet{Gelman14}, and \citet{BatesEtAlParsimonious} for recent discussion.}
+We have chosen Stan as the programming language of choice (over JAGS and WinBUGS) because it is possible to fit arbitrarily complex models with Stan. For example, it is possible (if time consuming) to fit a model with $14$ fixed effects predictors and two crossed random effects by subject and item, each involving a $14\times 14$ variance-covariance matrix \citep{BatesEtAlParsimonious}; as far as we are aware,  such models cannot be fit in JAGS or WinBUGS.\footnote{Whether it makes sense in general to fit such a complex model is a different issue; see \citet{Gelman14}, and \citet{BatesEtAlParsimonious} for recent discussion.}
 
 In this tutorial, 
 we take it as a given that the reader is interested in learning how to fit Bayesian linear mixed models.
@@ -136,9 +136,10 @@ We start with the two-condition repeated measures data-set~\citep{gibsonwu} as a
 
 
 \section{Bayesian modeling}
-Bayesian modeling has two major advantages over frequentist analysis with linear mixed models. First, information based on preceding results can be incoportated using different priors. Second, complex models with a large number of random variance components can be fit. In the following, we will provide a short introduction to Bayesian statistics.
 
-Bayesian modeling is based on Bayes' Theorem. It can be seen as a way of understanding how the probability that a hypothesis is true is affected by new data. In mathematical notation,
+Bayesian modeling has two major advantages over frequentist analysis with linear mixed models. First, information based on preceding results can be incoportated using different priors. Second, complex models with a large number of random variance components can be fit. In the following, we will provide a short introduction to Bayesian statistics which highlights these two advantages of Bayesian modeling.
+
+The first advantage of Bayesian modeling is a consequence of Bayes' Theorem, the fundamental rule of Bayesian statistics. It can be seen as a way of understanding how the probability that a hypothesis is true is affected by new data. In mathematical notation,
 
 $$
 P(H\mid D) = \frac{P(D\mid H) P(H)}{P(D)},
@@ -187,21 +188,20 @@ curve(dnorm(x, mean = xbar, sd = sd), from = 0, to = 160, ylim = c(0, 0.06),
 curve(dnorm(x, mean = m1, sd = sqrt(v1)), add = TRUE)
 curve(dnorm(x, mean = mstar1, sd = sqrt(vstar1)), add = TRUE, lty = 4)
 @
-\caption{Prior, likelihood, and posterior normal distributions. The likelihood is based on $n = 20$ observations with sample mean $\mu = 100$ and standard deviation $\sigma = 40$. The prior has mean $\mu_0 = 60$ and variance $\sigma^2_0 = 1000$ (left-hand panel) or $\sigma^2_0 = 100$ (right-hand panel), respectively.}
+\caption{Prior, likelihood, and posterior normal distributions. The likelihood is based on $n = 20$ observations with sample mean $\mu = 100$ and standard deviation $\sigma = 40$. The prior (identical in both panels) has mean $\mu_0 = 60$ and variance $\sigma^2_0 = 1000$ (left-hand panel) or $\sigma^2_0 = 100$ (right-hand panel), respectively.}
 \label{fig:bayes}
 \end{figure}
 
-The researcher starts to collect data. In our example, there are $n = 20$ values with a sample mean of $\bar x = 100$ and a standard deviation of $\sigma = 40$. The corresponding likelihood distribution is displayed in Figure \ref{fig:bayes} (dashed line). The resulting posterior distribution (dash-dot line) is a result of prior and likelihood. Given the prior with the large variance (left-hand panel), the posterior is largely influenced by the data. If the prior has a lower variance (right-hand panel), its influence on the posterior is much stronger resulting in a stronger shift towards the prior's mean.
+The researcher starts to collect data. In our example, there are $n = 20$ values with a sample mean of $\bar x = 100$ and a standard deviation of $\sigma = 40$. The corresponding likelihood distribution is displayed in Figure \ref{fig:bayes} (dashed line). The resulting posterior distribution (dash-dot line) is a result of prior and likelihood. Given the prior with the large variance (left-hand panel), the posterior is largely influenced by the data. If the prior has a lower variance (right-hand panel), its influence on the posterior is much stronger resulting in a smaller shift towards the data mean.
 
-This toy example illustrates the central idea of Bayesian modeling. The prior reflects our knowledge of past results. In most cases, we will use so-called vague flat priors such that the posterior distribution is mainly affected by the data. The resulting posterior distribution allows for calculating credible intervals of true parameter values (see below).
+This toy example illustrates the central idea of Bayesian modeling. The prior reflects our knowledge of past results. In most cases, we will use so-called vague flat priors such that the posterior distribution is mainly affected by the data. The resulting posterior distribution allows for making inferences about model parameters. 
+
+The second advantage of Bayesian modeling concerns variance components (random effects). Fitting a large number of random effects in non-Bayesian settings requires a large amount of data. Often, the data-set is too small to fit reliable distributions of random effects \citep{BatesEtAlParsimonious}.  However, if a researcher is interested in differences between individual subjects or items (random intercepts and random slopes) or relationships between differences (correlations between variance components), Bayesian modeling can be used even if there is not enough data for inferential statistics. The resulting posterior distributions might have high variance but they still allow for calculating probabilities of true parameter values of variance components. Note that we do not intend to criticize classical LMMs, but rather to highlight the possibilities of Bayesian modeling concerning random effects.
 
 For further explanation of the advantages this approach affords beyond the classical frequentist approach, the reader is directed to the rich literature relating to a comparison between Bayesian versus frequentist statistics (such as the provocatively titled paper by \citealp{lavine1999bayesian}; and the highly accessible textbook by 
 \citealp{kruschke2014doing}). 
 
-The second advantage of Bayesian modeling concerns variance components (random effects). Fitting a large number of random effects in non-Bayesian settings requires a large amount of data. Often, the data-set is too small to fit reliable distributions of random effects \citep{BatesEtAlParsimonious}.  However, if a researcher is interested in differences between individual subjects or items (random intercepts and random slopes) or relationships between differences (correlations between variance components), Bayesian modeling can be used even if there is not enough data for inferential statistics. The resulting posterior distributions might have high variance but they still allow for calculating probabilities of true parameter values of variance components. Note that we do not intend to critisice classical LMMs but highlight possibilities of Bayesian modeling concerning random effects.
-
-
-\section{Example 1: A two-condition repeated measures design}
+\section{Example: A two-condition repeated measures design}
 \label{sec:modeling}
 
 This section motivates the LMM with the self-paced reading data-set of~\citet{gibsonwu}. We introduce the data-set, state our modeling goals here, and proceed to build up increasingly complex LMMs.
@@ -240,13 +240,15 @@ to a varying intercepts model
 %(Section~\ref{subsec:ranint}) 
 and finally to a varying intercepts, varying slopes model 
 %(Section~\ref{subsec:ranslp})
-(the ``maximal model'' of \citealp{barr2011random}). The result is a probability model that expresses how the dependent variable, the reading time labeled $\hbox{\texttt{rt}}$, was generated in the experiment of~\citet{gibsonwu}. 
+(the ``maximal model'' of \citealp{barr2011random}). 
+Models of varying complexity such as these three can be generalized as described in Appendix~\ref{sec:matrix}. 
+The result is a probability model that expresses how the dependent variable, the reading time labeled $\hbox{\texttt{rt}}$, was generated in the experiment of~\citet{gibsonwu}. 
 
 As mentioned above, 
 the goal of Bayesian modeling is to derive the \textit{posterior probability distribution} of the model parameters from a \textit{prior probability distribution} and a \textit{likelihood function}. Stan makes it easy to compute this posterior distribution of each parameter of interest. 
 The posterior distribution reflects what we should believe, given the data, regarding the value of that parameter.
 
-\subsection{Fixed Effects Model (Simple Linear Model)}
+\subsection{Fixed Effects Model (Linear Model)}
 \label{subsec:fixef}
 
 We begin by making the working assumption that the dependent variable of reading time $\hbox{\texttt{rt}}$ on the head noun is approximately log-normally distributed~\citep{rouder2005}. This assumes that the logarithm of $\hbox{\texttt{rt}}$ is approximately normally distributed. The logarithm of the reading times, $\log \hbox{\texttt{rt}}$, has some unknown grand mean $\beta _0$. 
@@ -255,13 +257,12 @@ The mean of the log-normal distribution of $\hbox{\texttt{rt}}$ is the sum of $\
 \begin{equation}\label{eq:fixef}
 \log \hbox{\texttt{rt}}_{i} = \beta _0 + \beta _1\hbox{\texttt{so}}_i + \varepsilon_{i} 
 \end{equation}
-
-The index $i$ represents the $i$-th row in the data-frame (in this case, $i \in \{1,\dots,547\}$); the term $\varepsilon_i$ represents the error in the $i$-th row.
+This is a \textit{fixed effects model}. The index $i$ represents the $i$-th row in the data-frame (in this case, $i \in \{1,\dots,547\}$); the term $\varepsilon_i$ represents the error in the $i$-th row.
 With the above $\pm 1$ contrast coding, $\beta _0$ represents the grand mean of $\log \hbox{\texttt{rt}}$, regardless of relative clause type. It can be estimated by simply taking the grand mean of $\log \hbox{\texttt{rt}}$.
 The parameter $\beta _1$ is an adjustment to $\beta _0$ so that the mean of $\log \hbox{\texttt{rt}}$ is $\beta _0 + 1 \beta _1$ when $\log \hbox{\texttt{rt}}$ is from the object relative condition, and $\beta _0 - 1 \beta _1$ when $\log \hbox{\texttt{rt}}$ is from the subject relative condition. Notice that $2\times \beta_1$ will be the difference in the means between the object and subject relative clause conditions.
 Together, $\beta _0$ and $\beta _1$ make up the part of the model which characterizes the effect of the experimental manipulation, relative clause type (\texttt{so}), on the dependent variable \texttt{rt}. We call this a fixed effects model because we estimate the $\beta$ parameters, which are unvarying from subject to subject and from item to item. In R, this would correspond to fitting a simple linear model using the \texttt{lm} function, with \texttt{so} as predictor and $\log rt$ as dependent variable.
 
-The error $\varepsilon _i $ is positive when $\log \hbox{\texttt{rt}}_i$ is greater than the expected value $\mu_i = \beta _0 + \beta _1 \hbox{\texttt{so}}_i$ and negative when $\log \hbox{\texttt{rt}}_i$ is less than the expected value $\mu_i$. Thus, the error is the amount by which the expected value differs from  actually observed value. It is standardly assumed that the $\varepsilon_i$ are independently and identically distributed as a normal distribution with mean zero and unknown standard deviation $\sigma_e$. Stan parameterizes the normal distribution by the mean and standard deviation, and we follow that convention here, by writing the distribution of $\varepsilon$ as $\mathcal{N}(0, \sigma _e)$ (the standard notation in statistics is in terms of mean and variance). A consequence of the assumption that the errors are identically distributed is that the distribution of $\varepsilon$ should, at least approximately, have the same shape as the normal distribution. Independence implies that there should be no correlation between the errors---this is not the case in the data, since we have multiple measurements from each subject, and from each item.
+The error $\varepsilon _i $ is positive when $\log \hbox{\texttt{rt}}_i$ is greater than the expected value $\mu_i = \beta _0 + \beta _1 \hbox{\texttt{so}}_i$ and negative when $\log \hbox{\texttt{rt}}_i$ is less than the expected value $\mu_i$. Thus, the error is the amount by which the expected value differs from  actually observed value. It is standardly assumed that the $\varepsilon_i$ are independently and identically distributed as a normal distribution with mean zero and unknown standard deviation $\sigma_e$. Stan parameterizes the normal distribution by the mean and standard deviation, and we follow that convention here by writing the distribution of $\varepsilon$ as $\mathcal{N}(0, \sigma _e)$. This is in spite of the standard notation in statistics in terms of mean and variance. A consequence of the assumption that the errors are identically distributed is that the distribution of $\varepsilon$ should, at least approximately, have the same shape as the normal distribution. Independence implies that there should be no correlation between the errors---this is not the case in the data, since we have multiple measurements from each subject, and from each item.
 
 %%Listing1
 
@@ -301,13 +302,13 @@ beta1 <- unlist(extract(fixEfFit, pars = "beta[2]"))
 print(quantile(beta1, probs = c(0.025, 0.5, 0.975)))
 \end{Verbatim}
 % @
-\caption{Code for the fixed effects Model 1.}\label{fig:Model1code}
+\caption{Code for the fixed effects model.}\label{fig:Model1code}
 \end{listing}
 \doublespacing
 
-We now fit the fixed effects Model~\ref{eq:fixef}. 
-For the following discussion, please refer to the code in Listings~\ref{fig:Model1code} (R code) and \ref{fig:Model1Stancode} (Stan code). First, we read the~\citet{gibsonwu} data into a data frame \texttt{rDat} in R, and then subset the critical region (Listing~\ref{fig:Model1code}, lines 2 and 4).
-Next, we create a data list \texttt{stanDat} for Stan, which contains the data (line 7). Stan  requires the data to be of type list; this is different from the \texttt{lm} and \texttt{lmer} functions, which assume that the data are of type data-frame.
+We now fit the fixed effects model. 
+For the following discussion, refer to the code in Listings~\ref{fig:Model1code} (R code) and \ref{fig:Model1Stancode} (Stan code). First, we read the~\citet{gibsonwu} data into a data frame \texttt{rDat} in R, and then subset the critical region (Listing~\ref{fig:Model1code}, lines 2 and 4).
+Next, we create a data list \texttt{stanDat} for Stan, which contains the data (line 13). Stan  requires the data to be of type list; this is different from the \texttt{lm} and \texttt{lmer} functions, which assume that the data are of type data-frame.
 
 \paragraph{Defining the model}
 
@@ -330,34 +331,34 @@ model {
   }
 }
 \end{Verbatim}
-\caption{Stan code for the fixed effects Model 1.}\label{fig:Model1Stancode}
+\caption{Stan code for the fixed effects model.}\label{fig:Model1Stancode}
 \end{listing}
 
 The next step is to write the Stan model in a text file with extension \texttt{.stan}. A Stan model consists of several \emph{blocks}. A block is a set of statements surrounded by brackets and preceded by the block name. We open up a file \texttt{fixEf.stan} in a text editor and write down the first block, the \emph{data block}, which contains the declaration of the variables in the data object \texttt{stanDat} (Listing~\ref{fig:Model1Stancode}, lines 1--5).
-The strings \texttt{real} and \texttt{int} specify the data type for each variable. A \texttt{real} variable is a real number ($\mathbb R$), and an \texttt{int} variable is an integer ($\mathbb Z$). For instance, \texttt{N} is the integer number of data points. The variables $\hbox{\texttt{so}}$ and $\hbox{\texttt{rt}}$ are arrays of length \texttt{N} whose entries are \texttt{real}. We constrain a variable to take only a subset of the values allowed by its type (e.g. \texttt{int} or \texttt{real}) by specifying in brackets lower and upper bounds (e.g. \texttt{<lower=-1,upper=1>}). The variables in the data block, \texttt{N}, \texttt{rt}, and \texttt{so}, correspond to the values of the list \texttt{stanDat} in R.
+The strings \texttt{real} and \texttt{int} specify the data type for each variable. A \texttt{real} variable is a real number ($\mathbb R$), and an \texttt{int} variable is an integer ($\mathbb Z$). For instance, \texttt{N} is the integer number of data points. The variables $\hbox{\texttt{so}}$ and $\hbox{\texttt{rt}}$ are arrays of length \texttt{N} whose entries are \texttt{real}. We constrain a variable to take only a subset of the values allowed by its type (e.g. \texttt{int} or \texttt{real}) by specifying in brackets lower and upper bounds (e.g. \texttt{<lower=-1,upper=1>}). The variables in the data block, \texttt{N}, \texttt{rt}, and \texttt{so}, correspond to the values of the list \texttt{stanDat} in R. The list \texttt{stanDat} must match the variables of the data block in case, but the order of variable declarations in the data block does not necessarily have to match the order of values in the list \texttt{stanDat}.
 
 Next, we turn to the \textit{parameters block}, where the parameters are defined (Listing~\ref{fig:Model1Stancode}, lines 6--9). These are the parameters for which posterior distributions are of interest.
-The fixed effects Model~\ref{eq:fixef} has three parameters: the fixed intercept $\beta _0$, the fixed slope $\beta _1$, and the standard deviation $\sigma _e$ of the error. 
-The fixed effects $\beta _0$ and $\beta _1$ are in the vector \texttt{beta} of length two; note that although we called our parameters $\beta_0$ and $\beta_1$ in Model~\ref{eq:fixef}, in Stan, these are contained in a vector with indices 1 and 2, so $\beta_0$ is in \texttt{beta[1]} and $\beta_1$ in \texttt{beta[2]}.
+The fixed effects model has three parameters: the fixed intercept $\beta _0$, the fixed slope $\beta _1$, and the standard deviation $\sigma _e$ of the error. 
+We store the fixed effects $\beta _0$ and $\beta _1$ in a vector, which contains variables of type \texttt{real}. Although we called our parameters $\beta_0$ and $\beta_1$ in the fixed effects model, in Stan, these are contained in the vector \texttt{beta} with indices 1 and 2. Thus, $\beta_0$ is in \texttt{beta[1]} and $\beta_1$ in \texttt{beta[2]}. 
 The third parameter, the standard deviation $\sigma _e$ of the error (\texttt{sigma\_e}), is also defined here, and is constrained to have lower bound 0 (Listing~\ref{fig:Model1Stancode}, line 8).
 
 Finally,  the \textit{model block} specifies the prior distribution and the likelihood (Listing~\ref{fig:Model1Stancode}, lines 10--15).  
-To understand the Stan syntax, compare the Stan code above to the specification of Model~\ref{eq:fixef}. The Stan code literally writes out this model. The block begins with a local variable declaration for \texttt{mu}, which is the mean of $\hbox{\texttt{rt}}$ conditional on whether $\hbox{\texttt{so}}$ is $-1$ for the subject relative condition or $1$  for the object relative condition. 
+To understand the Stan syntax, compare the Stan code above to the specification of the fixed effects model. The Stan code literally writes out this model. The block begins with a local variable declaration for \texttt{mu}, which is the mean of $\hbox{\texttt{rt}}$ conditional on whether $\hbox{\texttt{so}}$ is $-1$ for the subject relative condition or $1$  for the object relative condition. 
+
+The for-loop assigns to \texttt{mu} the mean for the log-normal distribution of \texttt{rt[i]}, conditional on the value of the predictor \texttt{so[i]} for relative clause type. The statement \texttt{rt[i] $\sim $ lognormal(mu, sigma\_e)} means that the logarithm of each value in the vector $\hbox{\texttt{rt}}$ is normally distributed with mean \texttt{mu} and standard deviation \texttt{sigma\_e}. One could have equally well log-transformed the reading time and assumed a normal distribution instead of the lognormal. 
 
 The prior distributions on the parameters \texttt{beta} and \texttt{sigma\_e} would ordinarily be declared in the model block. If we don't declare any prior, it is assumed that they have a uniform prior distribution.
-Note that the distribution of \texttt{sigma\_e} is truncated at zero because \texttt{sigma\_e} is constrained to be positive (see the declaration \texttt{real<lower=0> sigma\_e;} in the parameters block). So, this means that the error has a uniform prior with lower bound $0$.
-
-In the model block, the for-loop assigns to \texttt{mu} the mean for the log-normal distribution of \texttt{rt[i]}, conditional on the value of the predictor \texttt{so[i]} for relative clause type. The statement \texttt{rt[i] $\sim $ lognormal(mu, sigma\_e)} means that the logarithm of each value in the vector $\hbox{\texttt{rt}}$ is normally distributed with mean \texttt{mu} and standard deviation \texttt{sigma\_e}. One could have equally well log-transformed the reading time and assumed a normal distribution instead of the lognormal. 
+Note that the distribution of \texttt{sigma\_e} is truncated at zero because \texttt{sigma\_e} is constrained to be positive (see the declaration \texttt{real<lower=0> sigma\_e;} in the parameters block). This means that the error has a uniform prior with lower bound $0$.
 
 \paragraph{Running the model}
-We save the file \texttt{fixEf.stan} which we just wrote and fit the model in R with the function \texttt{stan} from the package \texttt{rstan} (Listing~\ref{fig:Model1code}, lines 9 and 10).
+We save the file \texttt{fixEf.stan} which we just wrote and fit the model in R with the function \texttt{stan} from the package \texttt{rstan} (Listing~\ref{fig:Model1code}, lines 15-16).
 This call to the function \texttt{stan} will compile a C++ program which produces samples from the joint posterior distribution of the fixed intercept $\beta _0$, the fixed slope $\beta _1$, and the standard deviation $\sigma _e$ of the error. Here, the function generates four \textit{chains} of samples, each of which contains $2000$ samples of each parameter. Samples $1$ to $1000$ are part of the \textit{warmup}, where the chains settle into the posterior distribution. We analyze samples $1001$ to $2000$. The result is saved to an object \texttt{fixEfFit} of class \texttt{stanFit}.
 
 The warmup samples, also known as the \emph{burn-in} period, are intended to allow the MCMC sampling process to converge to the equilibrium distribution, the desired joint distribution over the variables. This is necessary since the initial values of the parameters might be very unlikely under the equilibrium distribution and hence bias the result. Once a chain has converged, the samples remain quite stable. Before the MCMC sampling process, the number of interations necessary for convergence is unknown. Therefore, all warmup iterations are discarded.
 
 The number of iterations necessary for convergence to the equilibrium distribution depends on the number of parameters. The probability to reach convergence increases with the number of iterations. Hence, we generally recommend using a large number of iterations although the process might converge after a smaller number of iterations. In the examples in the present paper, we use $1000$ iterations for warmup and another $1000$ iterations for analyzing the posterior distribution. For more complex models, more iterations might be necessary before the MCMC sampling process converges to the equilibrum distribution. Although there are ways to determine how long the simulation needs to be run and the number of warmup iterations given the type of posteriour distribution \citep{Raftery1992}, we illustrate below practical convergence diagnostics for the evaluation of convergence in the samples.
 
-Besides the number of iterations, we specified sampling in four different chains. Each chain is independent from the others and starts with different random initial values. Running multiple chains has two advantages over a single chain. First, the independent chains are helpful for diagnostics. If all chains have converged to the same region of the parameter space, there is a high probability that they converged to the equilibrium distribution. Second, running multiple chains generally allows for parallel simulations on multiple cores.
+Besides the number of iterations, we specified sampling in four different chains. Each chain is independent from the others and starts with different random initial values. Running multiple chains has two advantages over a single chain. First, the independent chains are helpful for diagnostics. If all chains have converged to the same region of the parameter space, it is more likely that they converged to the equilibrium distribution. Second, running multiple chains generally allows for parallel simulations on multiple cores.
 
 
 \paragraph{Evaluating model convergence and summarizing results}
@@ -371,7 +372,7 @@ A trace plot has the chains plotted against the sample ID. In Figure~\ref{fig:tr
 load("../data/fixEfFit.Rda")
 traceplot(fixEfFit,pars=c("beta","sigma_e"),inc_warmup=FALSE)
 @
-\caption{Trace plots of the fixed intercept $\beta _0$ (\texttt{beta[1]}), the fixed slope $\beta _1$ (\texttt{beta[2]}), and the standard deviation $\sigma _e$ (\texttt{sigma\_e}) of the error for the fixed effects Model~\ref{eq:fixef}.} Different colours denote different chains.
+\caption{Trace plots of the fixed intercept $\beta _0$ (\texttt{beta[1]}), the fixed slope $\beta _1$ (\texttt{beta[2]}), and the standard deviation $\sigma _e$ (\texttt{sigma\_e}) of the error for the fixed effects model.} Different colours denote different chains.
 \label{fig:traceplot}
 \end{figure}
 
@@ -395,7 +396,7 @@ $\hat \sigma_e$ &   0.60  & 0.56   &   0.64   &  1\\
 \caption{Examining the credible intervals and the R-hat statistic in the Gibson and Wu data.}\label{tab:quantilesGibsonWu}
 \end{table}
 
-The result of fitting the fixed effects Model~\ref{eq:fixef} is the \textit{joint posterior probability distribution} of the parameters $\beta _0$, $\beta _1$, and $\sigma _e$. The distribution is joint because each of the $4000$ $(4\text{ chains }\cdot  1000 \text{ post-warmup iterations})$ posterior samples which the call to \texttt{stan} generates is a vector $\theta = ( \beta _0, \beta _1, \sigma _e )^\intercal $ of three model parameters. Thus, the object \texttt{fixEfFit} contains $4000$ parameter vectors $\theta $ which occupy a three dimensional space. Already in three dimensions, the posterior distribution becomes difficult to view in one graph. Figure~\ref{fig:jointposterior} displays the joint posterior probability distribution of the elements of $\theta $ by projecting it down onto planes. In each of the three planes (lower triangular scattergrams) we see how one parameter varies with respect to the other. In the diagonal histograms, we visualize the marginal probability distribution of each parameter separately from the other parameters.
+The result of fitting the fixed effects model is the \textit{joint posterior probability distribution} of the parameters $\beta _0$, $\beta _1$, and $\sigma _e$. The distribution is joint because each of the $4000$ $(4\text{ chains }\times  1000 \text{ post-warmup iterations})$ posterior samples which the call to \texttt{stan} generates is a vector $\theta = ( \beta _0, \beta _1, \sigma _e )^\intercal $ of three model parameters. Thus, the object \texttt{fixEfFit} contains $4000$ parameter vectors $\theta $ which occupy a three dimensional space. Already in three dimensions, the posterior distribution becomes difficult to view in one graph. Figure~\ref{fig:jointposterior} displays the joint posterior probability distribution of the elements of $\theta $ by projecting it down onto planes. In each of the three planes (lower triangular scattergrams) we see how one parameter varies with respect to the other. In the diagonal histograms, we visualize the marginal probability distribution of each parameter separately from the other parameters.
 \begin{figure}
 \centering
 <<figbivariatedistrn, include=TRUE,echo=FALSE,cache=TRUE,fig.width=7,fig.height=7,out.width='0.75\\textwidth'>>=
@@ -427,9 +428,7 @@ for(i in 1:3)
       # DEFINE GRID
       n <- 50
       xlim<-lim[i,]
-#       xlim<-c(-1,1)
       ylim<-lim[j,]
-#       ylim<-c(-1,1)
       x <- seq(xlim[1],xlim[2],length.out=n)
       y <- seq(ylim[1],ylim[2],length.out=n)
       # EVALUATE HEIGHT FUNCTION ON GRID
@@ -446,11 +445,11 @@ for(i in 1:3)
     }
   }
 @
-\caption{Bivariate joint posterior probability distribution of each element of $\theta $ with each other element (lower diagonal) and marginal posterior probability distribution of each element of $\theta $ separately (diagonal). All parameters are on the log scale, but note the difference in length scale between $\beta _1$ on the one hand and $\beta _0$ and $\sigma _e$ on the other.}\label{fig:jointposterior}
+\caption{Samples and level curves of the bivariate joint posterior probability distribution of each element of $\theta $ with each other element (lower triangular) and marginal posterior probability distribution of each element of $\theta $ separately (diagonal). All parameters are on the log scale, but note the difference in length scale between $\beta _1$ on the one hand and $\beta _0$ and $\sigma _e$ on the other.}\label{fig:jointposterior}
 \end{figure}
 
 Of immediate interest is the marginal distribution of the slope $\beta _1$. 
-Figure~\ref{fig:jointposterior} suggests that the posterior probability density of $\beta _1$ is mainly spread over the interval $(-\infty,0)$. One quantitative way to assess the posterior probability distribution is to examine its quantiles; see Table~\ref{tab:quantilesGibsonWu}. Here, it is useful to define the concept of the \textit{credible interval}. The $(1-\alpha )$\% credible interval contains $(1-\alpha )$\% of the posterior probability density. Unlike the $(1-\alpha )$\% confidence interval from the frequentist setting, the $(1-\alpha )$\% credible interval represents the range within which we are $(1-\alpha )$\% certain that the true value of the parameter lies, given the prior and the data (see \citealp{morey2015fallacy} for further discussion on CIs vs credible intervals). A common convention is to use the interval ranging from the $2.5$th to $97.5$th percentiles. We follow this convention and 95\% credible intervals in Table~\ref{tab:quantilesGibsonWu}. The last lines of \ref{fig:Model1code} illustrate how these quantiles of the posterior distribution of $\beta_1$ (\texttt{beta[2]}) can be computed.
+Figure~\ref{fig:jointposterior} suggests that most of the posterior probability density of $\beta _1$ is located below zero. One quantitative way to assess the posterior probability distribution is to examine its quantiles; see Table~\ref{tab:quantilesGibsonWu}. Here, it is useful to define the concept of the \textit{credible interval}. The $(1-\alpha )$\% credible interval contains $(1-\alpha )$\% of the posterior probability density. Unlike the $(1-\alpha )$\% confidence interval from the frequentist setting, the $(1-\alpha )$\% credible interval represents the range within which we are $(1-\alpha )$\% certain that the true value of the parameter lies, given the prior and the data (see \citealp{morey2015fallacy} for further discussion on confidence intervals vs credible intervals). A common convention is to use the interval ranging from the $2.5$th to $97.5$th percentiles. We follow this convention to obtain 95\% credible intervals in Table~\ref{tab:quantilesGibsonWu}. The last lines of Listing~\ref{fig:Model1code} illustrate how these quantiles of the posterior distribution of $\beta_1$ (\texttt{beta[2]}) can be computed.
 
 The samples of $\beta_1$ suggests that approximately
 \Sexpr{round(mean(beta1<0),digits=2)*100}\% of the posterior probability density is below zero, suggesting that there is some evidence that object relatives are easier to process than subject relatives in Chinese, given the Gibson and Wu data. However, since the 95\% credible interval includes 0, we may be reluctant to draw this conclusion.
@@ -459,7 +458,7 @@ We will say more about the evaluation of research hypotheses further on.
 \subsection{Varying Intercepts Mixed Effects Model}
 \label{subsec:ranint}
 
-The fixed effects Model~\ref{eq:fixef} is inappropriate for the Gibson and Wu data because it does not take into account the fact that we have multiple measurements for each subject and item. As mentioned above, these multiple measurements lead to a violation of the independence of errors assumption. Moreover, the fixed effects coefficients $\beta_0$ and $\beta_1$ represent means over all subjects and items, ignoring the fact that some subjects will be faster and some slower than average; similarly, some items will be read faster than average, and some slower.
+The fixed effects model is inappropriate for the Gibson and Wu data because it does not take into account the fact that we have multiple measurements for each subject and item. As mentioned above, these multiple measurements lead to a violation of the independence of errors assumption. Moreover, the fixed effects coefficients $\beta_0$ and $\beta_1$ represent means over all subjects and items, ignoring the fact that some subjects will be faster and some slower than average; similarly, some items will be read faster than average, and some slower.
 
 In linear mixed models, we take this by-subject and by-item variability into account by adding adjustment terms $u_{0j}$ and $w_{0k}$, which adjust $\beta_0$ for subject $j$ and item $k$. This partially decomposes $\varepsilon _i$ into a sum of the terms $u_{0j}$ and $w_{0k}$, which are adjustments to the intercept $\beta _0$ for the subject $j$ and item $k$ associated with $\hbox{\texttt{rt}}_i$. If subject $j$ is slower than the average of all the subjects, $u_j$ would be some positive number, and if item $k$ is read faster than the average reading time of all the items, then $w_k$ would be some negative number. Each subject $j$ has their own adjustment $u_{0j}$, and each item its own $w_{0k}$. These adjustments $u_{0j}$ and $w_{0k}$ are called \textit{random intercepts} by \citet{pinheirobates} and
 \textit{varying intercepts} by \citet{gelmanhill07}, and by adjusting $\beta _0$ by these we account for the variability between speakers, and between items. 
@@ -470,13 +469,13 @@ We now have three sources of variance in this model: the standard deviation of t
 We now express the logarithm of reading time, which was produced by subjects $j \in \{1,\dots,37\}$ reading items $k \in \{1,\dots,15\}$, in conditions $i \in \{1,2\}$ (1 refers to subject relatives, 2 to object relatives), as the following sum. Notice that we are now using a slightly different way to describe the model, compared to the fixed effects model. We are using indices for subject, item, and condition to identify unique rows. Also, instead of writing $\beta_1 \hbox{\texttt{so}}$, we index $\beta_1$ by the condition $i$. This follows the notation used in the textbook on linear mixed models, written by the authors of \texttt{nlme} \citep{pinheirobates}, the precursor to \texttt{lme4}.
 
 \begin{equation}\label{eq:ranint}
-\log \hbox{\texttt{rt}}_{ijk} = \beta _0 + \beta_{1i} + u_{0j} + w_{0k} + \varepsilon_{ijk} 
+\log \hbox{\texttt{rt}}_{ijk} = \beta _0 + \underbrace{\beta_{1i}}_{\beta_1\hbox{\texttt{so}}_i} + u_{0j} + w_{0k} + \varepsilon_{ijk} 
 \end{equation}
 
-Model~\ref{eq:ranint} is an LMM, and more specifically a \textit{varying intercepts model}. The coefficient $\beta_{1i}$ is the one of primary interest; it will have some mean value $-\beta_1$ for subject relatives and $\beta_1$ for object relatives due to the contrast coding. So, if our posterior mean for $\beta_1$ is negative, this would suggest that object relatives are read faster than subject relatives.
+This is an LMM, and more specifically a \textit{varying intercepts model}. The coefficient $\beta_{1i}$ is the one of primary interest; it will have some mean value $-\beta_1$ for subject relatives and $\beta_1$ for object relatives due to the contrast coding. So, if our posterior mean for $\beta_1$ is negative, this would suggest that object relatives are read faster than subject relatives.
 
-We fit the varying intercepts Model~\ref{eq:ranint} in Stan in much the same way as the fixed effects Model~\ref{eq:fixef}. 
-For the following discussion, please consult Listing~\ref{fig:Model2code} for the R code used to run the model, and Listing~\ref{fig:Model2Stancode} for the Stan code.
+We fit the varying intercepts model in Stan in much the same way as the fixed effects model. 
+For the following discussion, consult Listing~\ref{fig:Model2code} for the R code used to run the model, and Listing~\ref{fig:Model2Stancode} for the Stan code.
 
 \paragraph{Setting up the data}
 
@@ -507,7 +506,7 @@ print(quantile(beta1, probs = c(0.025, 0.5, 0.975)))
 mean(beta1 < 0)                  
 \end{Verbatim}
 % @
-\caption{Code for running Model 2, the varying intercepts model.}\label{fig:Model2code}
+\caption{Code for running the random intercepts model, the varying intercepts model. Note that lines 1-10 and 14 of Listing~\ref{fig:Model1code} must be run first.}\label{fig:Model2code}
 \end{listing}
 \doublespacing
 The data which we prepare for passing on to the function \texttt{stan} now includes subject and item information (Listing~\ref{fig:Model2code}, lines 2--8). 
@@ -520,7 +519,7 @@ The data block in the Stan code accordingly includes the number \texttt{J}, \tex
 data {
   int<lower=1> N;                  //number of data points
   real rt[N];                      //reading time
-  real<lower=-1, upper=1> so[N];    //predictor
+  real<lower=-1, upper=1> so[N];   //predictor
   int<lower=1> J;                  //number of subjects
   int<lower=1> K;                  //number of items
   int<lower=1, upper=J> subj[N];   //subject id
@@ -548,10 +547,10 @@ model {
   }
 }
 \end{Verbatim}
-\caption{Stan code for running Model 2, the varying intercepts model.}\label{fig:Model2Stancode}
+\caption{Stan code for running the random intercepts model, the varying intercepts model.}\label{fig:Model2Stancode}
 \end{listing}
 
-Model~\ref{eq:ranint}, shown in Listing~\ref{fig:Model2Stancode}, still has the fixed intercept $\beta _0$, the fixed slope $\beta _1$, and the standard deviation $\sigma _e$ of the error, and we specify these in the same way as we did for the fixed effects Model~\ref{eq:fixef}. In addition, the varying intercepts Model~\ref{eq:ranint} has by-subject varying intercepts $u_{0j}$ for $j \in \{1,\ldots,J\}$ and by-item varying intercepts $w_{0k}$ for $k \in \{1,\ldots,K\}$. The standard deviation of $u_0$ is $\sigma _u$ and the standard deviation of $w_0$ is $\sigma _w$. We again constrain the standard deviations to be positive.
+The random intercepts model, shown in Listing~\ref{fig:Model2Stancode}, still has the fixed intercept $\beta _0$, the fixed slope $\beta _1$, and the standard deviation $\sigma _e$ of the error, and we specify these in the same way as we did for the fixed effects model. In addition, the varying intercepts model has by-subject varying intercepts $u_{0j}$ for $j \in \{1,\ldots,J\}$ and by-item varying intercepts $w_{0k}$ for $k \in \{1,\ldots,K\}$. The standard deviation of $u_0$ is $\sigma _u$ and the standard deviation of $w_0$ is $\sigma _w$. We again constrain the standard deviations to be positive.
 
 The model block places normal distribution priors on the varying intercepts $u_0$ and $w_0$.  We implicitly place uniform priors on \texttt{sigma\_u}, \texttt{sigma\_w}, and \texttt{sigma\_e} by omitting them from the model block. As pointed out earlier for \texttt{sigma\_e}, these prior distributions have lower bound zero because of the constraint \texttt{<lower=0>} in the variable declarations. 
 
@@ -560,10 +559,10 @@ The vector \texttt{u} has varying intercepts for subjects. Likewise, the vector 
 
 \paragraph{Running the model}
 
-In R, we pass the list \texttt{stanDat} of data to \texttt{stan}, which compiles a C++ program to sample from the posterior distribution of Model~\ref{eq:ranint}.
+In R, we pass the list \texttt{stanDat} of data to \texttt{stan}, which compiles a C++ program to sample from the posterior distribution of the random intercepts model.
 Stan samples from the posterior distribution of the model parameters, including the varying intercepts $u_{0j}$ and $w_{0k}$ for each subject $j \in \{1,\ldots ,J\}$ and item $k \in \{1,\ldots ,K\}$. 
 
-It may be helpful to rewrite the model in mathematical form following the Stan syntax (\citealp{gelmanhill07} use a similar notation); the Stan statements are slightly different from the way that we expressed Model~\ref{eq:ranint}. Defining $i$ as the row id in the data, i.e., $i \in  \{1,\dots, 547\}$, we can write:
+It may be helpful to rewrite the model in mathematical form following the Stan syntax (\citealp{gelmanhill07} use a similar notation); the Stan statements are slightly different from the way that we expressed the random intercepts model. Defining $i$ as the row id in the data, i.e., $i \in  \{1,\dots, 547\}$, we can write:
 
 \begin{equation}
 \begin{split}
@@ -605,7 +604,7 @@ $\hat \sigma_w$ & 0.20  &       0.12  &  0.32 &     1\\
 Consider now that subjects who are faster than average (i.e., who have a negative varying intercept) may exhibit greater slowdowns when they read subject relatives compared to object relatives. Similarly, it is in principle possible that items which are read faster (i.e., which have a large negative varying intercept) may show a greater slowdown in subject relatives than object relatives. The opposite situation could also hold: faster subjects may show smaller SR-OR effects, or items read faster may show smaller SR-OR effects.
 Although such individual-level variability was not of interest in the original paper by Gibson and Wu, it could be of theoretical interest  (see, for example, \citealp{kliegl2010experimental}). Furthermore, as \citet{barr2011random} point out, it is in principle desirable to include a fixed effect factor in the random effects as a varying slope if the experiment design is such that subjects see both levels of the factor (cf.\ \citealp{BatesEtAlParsimonious}).
 
-In order to express this structure in the LMM, we must make two changes in the varying intercepts Model~\ref{eq:ranint}. 
+In order to express this structure in the LMM, we must make two changes in the varying intercepts model. 
 
 \paragraph{Adding varying slopes}
 
@@ -615,13 +614,14 @@ The first change is to let the size of the effect for the predictor \texttt{so} 
 \log \hbox{\texttt{rt}}_{ijk} = \underbrace{\beta_0 + u_{0j} + w_{0k}}_{\text{varying intercepts}}  + 
 \underbrace{\beta_1 + u_{1ij} + w_{1ik}}_{\text{varying slopes}} + \varepsilon_{ijk} 
 \end{equation}
+This is a \textit{varying intercepts, varying slopes model}.
 
 \paragraph{Defining a variance-covariance matrix for the random effects}
 
-The second change which we make to Model~\ref{eq:ranint} is to define a covariance relationship between by-subject varying intercepts and slopes, and between by-items intercepts and slopes. This amounts to adding an assumption that the by-subject slopes $u_{1}$ could in principle have some correlation with the by-subject intercepts $u_{0}$; and by-item slopes $w_{1}$ with by-item intercept $w_{0}$. We explain this in detail below.
+The second change which we make to the random intercepts model is to define a covariance relationship between by-subject varying intercepts and slopes, and between by-items intercepts and slopes. This amounts to adding an assumption that the by-subject slopes $u_{1}$ could in principle have some correlation with the by-subject intercepts $u_{0}$; and by-item slopes $w_{1}$ with by-item intercept $w_{0}$. We explain this in detail below.
 
 Let us assume that the adjustments $u_0$ and $u_1$ are normally distributed with mean zero and some variances $\sigma_{u0}^2$ and $\sigma_{u1}^2$, respectively; also assume that $u_0$ and $u_1$ have correlation $\rho_{u}$. It is standard to express this situation by defining a variance-covariance matrix $\Sigma _u$ (sometime this is simply called a variance matrix). 
-This matrix has the variances of $u_0$ and $u_1$ respectively along the diagonals, and the covariances on the off-diagonals. (The covariance $\mathrm{Cov}(X,Y)$ between two variables $X$ and $Y$ is defined as the product of their correlation $\rho$ and their standard deviations $\sigma_X$ and $\sigma_Y$: $\mathrm{Cov}(X,Y)=\rho\sigma_X \sigma_Y$.)
+This matrix has the variances of $u_0$ and $u_1$ respectively along the diagonal, and the covariances on the off-diagonal. (The covariance $\mathrm{Cov}(X,Y)$ between two variables $X$ and $Y$ is defined as the product of their correlation $\rho$ and their standard deviations $\sigma_X$ and $\sigma_Y$: $\mathrm{Cov}(X,Y)=\rho\sigma_X \sigma_Y$.)
 
 \begin{equation}\label{eq:covmat}
 \Sigma _u
@@ -685,10 +685,314 @@ An important point to notice here is that any $n\times n$ variance-covariance ma
 \end{pmatrix}
 \end{equation}
 
-In a correlation matrix, the diagonal elements will always be $1$, because a variable always has a correlation of $1$ with itself. The off-diagonals will have the correlations between the variables. Note also that, given the variances $\sigma_{u0}^2$ and $\sigma_{u1}^2$, we can always recover the variance-covariance matrix, if we know the correlation matrix. 
+In a correlation matrix, the diagonal elements will always be $1$, because a variable always has a correlation of $1$ with itself. The off-diagonal entries will have the correlations between the variables. Note also that, given the variances $\sigma_{u0}^2$ and $\sigma_{u1}^2$, we can always recover the variance-covariance matrix, if we know the correlation matrix. 
 This is because of the above-mentioned definition of covariance. 
 
-A correlation matrix can be decomposed into a square root of the matrix, using the Cholesky decomposition. Thus, given a correlation matrix $C$, we can obtain its square root $L$; an obvious consequence is that we can square $L$ to get the correlation matrix $C$ back.  This is easy to illustrate with a simple example. Suppose we have a correlation matrix:
+A correlation matrix can be decomposed into its \textit{square root} matrix. Given a correlation matrix $C$, we can obtain its square root matrix $L$. The square root of a matrix is such that we can square $L$ to get the correlation matrix $C$ back. 
+The next section shows that the matrix square root is important for generating the random intercepts and slopes because of its role in generating correlated random variables. 
+Appendix~\ref{sec:chol} describes one method for obtaining $L$, namely, the Cholesky decomposition. 
+
+\paragraph{Defining the model}
+
+\singlespacing
+\begin{listing}
+% <<Model3code, eval=FALSE>>=
+\begin{Verbatim}[numbers=left,frame=single,fontfamily=courier,fontsize=\footnotesize]
+ranIntSlpFit <- stan(file = "ranIntSlp.stan", data = stanDat,
+                     iter = 2000, chains = 4)
+
+# posterior probability of beta 1 being less
+# than 0:
+beta1 <- unlist(extract(ranIntSlpFit, pars = "beta[2]"))
+print(quantile(beta1, probs = c(0.025, 0.5, 0.975)))
+mean(beta1 < 0)
+\end{Verbatim}
+% @
+\caption{Code for running the varying intercepts, varying slopes model, the varying intercepts, varying slopes model. Note that lines 1-10 and 14 of Listing~\ref{fig:Model1code} and lines 2-8 of Listing~\ref{fig:Model2code} must be run first.}\label{fig:Model3code}
+\end{listing}
+\doublespacing
+
+
+\begin{listing}
+\begin{Verbatim}[numbers=left,frame=single,fontfamily=courier,fontsize=\footnotesize]
+data {
+  int<lower=1> N;                  //number of data points
+  real rt[N];                      //reading time
+  real<lower=-1, upper=1> so[N];   //predictor
+  int<lower=1> J;                  //number of subjects
+  int<lower=1> K;                  //number of items
+  int<lower=1, upper=J> subj[N];   //subject id
+  int<lower=1, upper=K> item[N];   //item id
+}
+
+parameters {
+  vector[2] beta;                  //intercept and slope
+  real<lower=0> sigma_e;           //error sd
+  vector<lower=0>[2] sigma_u;      //subj sd
+  cholesky_factor_corr[2] L_u;
+  matrix[2,J] z_u;
+  vector<lower=0>[2] sigma_w;      //item sd
+  cholesky_factor_corr[2] L_w;
+  matrix[2,K] z_w;
+}
+
+transformed parameters{
+  matrix[2,J] u;
+  matrix[2,K] w;
+  
+  u <- diag_pre_multiply(sigma_u, L_u) * z_u;  //subj random effects
+  w <- diag_pre_multiply(sigma_w, L_w) * z_w;  //item random effects
+}
+
+model {
+  real mu;
+  
+  //priors
+  L_u ~ lkj_corr_cholesky(2.0);
+  L_w ~ lkj_corr_cholesky(2.0);
+  to_vector(z_u) ~ normal(0,1);
+  to_vector(z_w) ~ normal(0,1);
+  //likelihood
+  for (i in 1:N){
+    mu <- beta[1] + u[1,subj[i]] + w[1,item[i]] 
+          + (beta[2] + u[2,subj[i]] + w[2,item[i]]) * so[i];
+    rt[i] ~ lognormal(mu, sigma_e);
+  }
+}
+\end{Verbatim}
+\caption{The Stan code for the varying intercepts, varying slopes model, the varying intercepts, varying slopes model.}\label{fig:Model3Stancode}
+\end{listing}
+
+
+With this background, implementing the varying intercepts, varying slopes model is straightforward; see Listing~\ref{fig:Model3code} for the R code and Listing~\ref{fig:Model3Stancode} for the Stan code. The R list \texttt{stanDat} is identical to the one of the varying intercepts, varying slopes model, and therefore we will focus on the Stan code.
+The data block is the same as before.
+The parameters block contains several new parameters. 
+This time we have vectors \texttt{sigma\_u} and \texttt{sigma\_w}, which are $(\sigma _{u0},\sigma _{u1})^\intercal $ and $(\sigma _{w0},\sigma _{w1})^\intercal $, instead of scalar values as in the random intercepts model. 
+The variables \texttt{L\_u}, \texttt{L\_w}, \texttt{z\_u}, and \texttt{z\_w}, which have been declared in the parameters block, play a role in the \textit{transformed parameters block}, a block which we did not use in the earlier models. The transformed parameters block generates the by-subject and by-item varying intercepts and slopes using the parameters \texttt{sigma\_u}, \texttt{L\_u}, \texttt{z\_u}, \texttt{sigma\_w}, \texttt{L\_w}, and \texttt{z\_w}.  The $J$ pairs of by-subject varying intercepts and slopes are in the rows of the $J\times 2$ matrix \texttt{u}, and the $K$ pairs of by-item varying intercepts and slopes are in the rows of the $K\times 2$ matrix \texttt{w}.
+
+These varying intercepts and slopes are obtained through the statements \texttt{diag\_pre\_multiply(sigma\_u, L\_u) * z\_u} and \texttt{diag\_pre\_multiply(sigma\_w, L\_w) * z\_w}.
+This statement generates varying intercepts and slopes from the joint probability distribution of Equation~\ref{eq:jointpriordist1}. 
+The parameters \texttt{L\_u}, \texttt{L\_w} are the Cholesky decompositions of the subject and item correlation matrices, respectively, and  \texttt{z\_u}, and \texttt{z\_w} are $\mathcal N(0,1)$ random variables. Appendix~\ref{sec:chol} has details on how this works.
+ 
+In th model block, we place priors on the parameters declared in the parameters block, and define how these parameters generate $\log \hbox{\texttt{rt}}$ (Listing~\ref{fig:Model3Stancode}, lines 30--42).
+The statement \texttt{L\_u $\sim $ lkj\_corr\_cholesky(2.0)} specifies a prior for the Cholesky factors of the correlation matrix \texttt{L\_u}. 
+This prior is best interpreted with respect to the square of the Cholesky factor, that is, with respect to the correlation matrix.
+The statement \texttt{L\_u $\sim $ lkj\_corr\_cholesky(2.0)} implicitly places the lkj prior~\cite[so-called because it was first described by][]{lewandowski2009generating} with shape parameter $\nu =2.0$ on the correlation matrices
+
+\begin{equation}
+\begin{pmatrix}
+1 & \rho _u\\
+\rho _u & 1
+\end{pmatrix}
+\text{ and }
+\begin{pmatrix}
+1 & \rho _w\\
+\rho _w & 1
+\end{pmatrix},
+\end{equation}
+
+\noindent
+where $\rho _u$ is the correlation between the by-subject varying intercept $\sigma _{u0}$ and slope $\sigma _{u1}$ (cf.\ the covariance matrix of Equation~\ref{eq:covmat}) and $\rho _w$ is the correlation between the by-item varying intercept $\sigma _{w0}$ and slope $\sigma _{w1}$. The lkj distribution is a probability distribution over correlation matrices. 
+The lkj distribution has one shape parameter $\nu$, which controls the prior correlation. 
+If $\nu > 1$, then the probability density becomes concentrated about the $2\times 2$ identity matrix.\footnote{The lkj prior can scale up to correlation matrices larger than $2\times 2$.} This expresses the prior belief that the correlations are not large. 
+If $\nu = 1$, then the probability density function is uniform over all $2\times 2$ correlation matrices. 
+If $0 < \nu < 1$, then the probability density has a trough at the $2\times 2$ identity matrix. 
+In our model, we choose $\nu=2.0$. This choice implies that the correlations on the off-diagonal are near zero, reflecting the fact that we have no prior information about the correlation between intercepts and slopes.
+
+The statement \texttt{to\_vector(z\_u) $\sim $ normal(0,1)} places a normal distribution with mean zero and standard deviation one on \texttt{z\_u}.\footnote{The function \texttt{to\_vector} means that we rearrange the matrix \texttt{z\_u} as a vector in order to place the normal distribution on a vector. This makes the code run faster.} The same goes for \texttt{z\_w}. The for-loop assigns to $\hbox{\texttt{mu}}$ the mean of the log-normal distribution from which we draw $\hbox{\texttt{rt[i]}}$, conditional on the value of the predictor \texttt{so[i]} for relative clause type and the subject and item identity.
+
+We can now fit the varying intercepts, varying slopes model; see Listing~\ref{fig:Model3code} for the code. We see in the model summary in Table~\ref{tab:Model3posterior} that the model has converged, and that the credible intervals of the parameter of interest, $\beta_1$, still include $0$. In fact, the posterior probability of the parameter being less than $0$ is now $90$\% (this information can be extracted as shown in Listing~\ref{fig:Model3code}, lines 6--8). 
+
+\begin{table}[htp]
+\begin{center}
+\begin{tabular}{crrrr}
+\hline
+parameter        & mean   & 2.5\%  &97.5\% & $\hat R$\\
+\hline
+$\hat \beta_0$ & 6.06 &   5.92  & 6.21  &  1\\
+$\hat \beta_1$ &  $-0.04$    &   $-0.09$  & 0.02 &  1\\
+$\hat \sigma_e$ &   0.51   &     0.48 &  0.55 &  1\\
+$\hat \sigma_{u0}$ & 0.25   &    0.19  &  0.34 & 1\\
+$\hat \sigma_{u1}$ & 0.07   &    0.01  &  0.14 & 1\\
+$\hat \sigma_{w0}$ & 0.20  &       0.13  &  0.32 &     1\\
+$\hat \sigma_{w1}$ & 0.04  &       0.0  &  0.10 &     1\\
+\hline
+\end{tabular}
+\end{center}
+\caption{The quantiles and the $\hat R$ statistic in the Gibson and Wu data, the varying intercepts, varying slopes model.}\label{tab:Model3posterior}
+\end{table}
+
+Figure~\ref{fig:lmlist} plots the varying slope's posterior distribution against the varying intercept's posterior distribution for each subject. The correlation between $u_0$ and $u_1$ is negative, as captured by the marginal posterior distributions of the correlation $\rho _u$ between $u_0$ and $u_1$. Thus, Figure~\ref{fig:lmlist} suggests that the slower a subject's reading time is on average, the slower they read object relatives. In contrast, Figure~\ref{fig:lmlist} shows no clear pattern for the by-item varying intercepts and slopes. The broader distribution of the correlation parameter for items compared to slopes illustrates the greater uncertainty concerning the true value of the parameter. We briefly discuss inference next.
+
+\begin{figure}[!htbp]
+\centering
+<<figrandintslopes,include=TRUE,echo=FALSE,cache=TRUE,fig.width=7,fig.height=5,out.width='0.75\\textwidth'>>=
+magnify<-0.80
+## load data:
+rDat<-read.table("../data/gibsonwu2012data.txt",header=TRUE)
+rDat<-subset(rDat,region=="headnoun")
+J<-length(unique(rDat$subj))
+K<-length(unique(rDat$item))
+
+# Load the varying intercepts, varying slopes effects model.
+load("../data/ranIntSlpFit.Rda")
+u<-matrix(nrow=2,ncol=J)
+for(j in 1:J)
+  for(i in 1:2)
+    u[i,j]<-mean(extract(ranIntSlpFit,pars=c(paste("u[",i,",",j,"]",sep="")))[[1]])
+N_sample<-length(extract(ranIntSlpFit,pars="L_u[1,1]")[[1]])
+L_u<-array(dim=c(2,2,N_sample))
+for(i in 1:2)
+  for(j in 1:2)
+    L_u[i,j,]<-extract(ranIntSlpFit,pars=c(paste("L_u[",i,",",j,"]",sep="")))[[1]]
+omega_u<-numeric()
+for(i in 1:N_sample){
+  Omega_u<-L_u[,,i]%*%t(L_u[,,i])
+  omega_u[i]<-Omega_u[1,2]
+}
+# Extract item random intercepts and slopes.
+w<-matrix(nrow=2,ncol=K)
+for(k in 1:K)
+  for(i in 1:2)
+    w[i,k]<-mean(extract(ranIntSlpFit,pars=c(paste("w[",i,",",k,"]",sep="")))[[1]])
+L_w<-array(dim=c(2,2,N_sample))
+for(i in 1:2)
+  for(j in 1:2)
+    L_w[i,j,]<-extract(ranIntSlpFit,pars=c(paste("L_w[",i,",",j,"]",sep="")))[[1]]
+omega_w<-numeric()
+for(i in 1:N_sample){
+  Omega_w<-L_w[,,i]%*%t(L_w[,,i])
+  omega_w[i]<-Omega_w[1,2]
+}
+# Visualize the posterior distribution for the intercept beta[1] ...
+par(mfrow=c(2,2),pch=21,bg="white")
+plot(u[1,],u[2,],bg="black",mgp=c(2,.25,0),
+     xlim=c(-.6,.6),ylim=c(-0.10,0.10),
+     xlab=expression(u[0]),ylab=expression(u[1]),
+     cex.axis=magnify)
+plot(w[1,],w[2,],bg="black",mgp=c(2,.25,0),
+     xlim=c(-.6,.6),ylim=c(-.10,.10),
+     xlab=expression(w[0]),ylab=expression(w[1]),
+     cex.axis=magnify)
+hist(omega_u,freq=FALSE,col="black",border="white",
+     main=NULL,xlab=expression(rho[u]))
+hist(omega_w,freq=FALSE,col="black",border="white",
+     main=NULL,xlab=expression(rho[w]))
+@
+\caption{The top row shows the relationship between the posterior mean of the varying slopes (y-axis) and intercepts (x-axis) for each subject (left panel) and item (right panel). The bottom row shows the posterior distribution of the parameter of correlation between the varying slopes and intercepts for each subject (left panel) and item (right panel).}
+\label{fig:lmlist}
+\end{figure}
+
+
+\paragraph{Random effects in a non-Bayesian LMM}
+
+We fit the same model also as a classical non-Bayesian LMM with the \texttt{lmer} function from the \texttt{lme4} package. This allows for comparing the results to the Stan results. Here, we focus on random effects. As illustrated in Figure \ref{fig:lmercomp}, the estimates of the random-effect standard deviations of the classical LMM are in agreement with the modes of the posterior distributions. However, the classical LMM is overparameterized due to an insufficient number of data points. Hence, correlations between random effects could not be estimated, as indicated by perfect correlations of $-1$ and $1$. In contrast, Stan can still estimate posterior distributions for these parameters (Figure \ref{fig:lmlist}).
+
+\begin{figure}[!htbp]
+\centering
+<<figlmercomp,include=TRUE,echo=FALSE,cache=TRUE,message=FALSE,fig.width=7,fig.height=5,out.width='0.75\\textwidth'>>=
+library(lme4)
+# fit LMM and extract random-effect variances
+so <- ifelse(rDat$type == "obj-ext", 1, -1)
+LMMFit <- lmer(log(rt) ~ so + (1 + so | subj) + (1 + so | item), rDat)
+vc <- VarCorr(LMMFit)
+sigma_u <- attr(vc[["subj"]], "stddev")
+sigma_w <- attr(vc[["item"]], "stddev")
+
+# extract values from Stan object
+sigma_u_stan <- extract(ranIntSlpFit, "sigma_u")[[1]]
+sigma_w_stan <- extract(ranIntSlpFit, "sigma_w")[[1]]
+
+# plot
+layout(matrix(1:4, nrow = 2, byrow = TRUE))
+sigma_u0_dens <- density(sigma_u_stan[ , 1])
+plot(sigma_u0_dens, main = NA, xlab = expression(sigma[u0]))
+abline(v = sigma_u[1])
+sigma_u1_dens <- density(sigma_u_stan[ , 2])
+plot(sigma_u1_dens, main = NA, xlab = expression(sigma[u1]))
+abline(v = sigma_u[2])
+sigma_w0_dens <- density(sigma_w_stan[ , 1])
+plot(sigma_w0_dens, main = NA, xlab = expression(sigma[w0]))
+abline(v = sigma_w[1])
+sigma_w1_dens <- density(sigma_w_stan[ , 2])
+plot(sigma_w1_dens, main = NA, xlab = expression(sigma[w1]))
+abline(v = sigma_w[2])
+@
+\caption{The curves show the density of the posterior distributions of the random-effect standard deviations. The vertical bars indicate the corresponding \texttt{lmer} estimates. The top row shows the random effects for subjects, the bottom row shows the random effects for items. Left-hand panels correspond to random intercepts, right-hand panels correspond to random slopes.}
+\label{fig:lmercomp}
+\end{figure}
+
+
+\section{Inference} \label{sec:bda}
+ 
+Having fit a varying intercepts, varying slopes model, we now explain one way to carry out statistical inference, using  credible intervals.  
+We have used this approach to draw inferences from data in previously published work (e.g., \citealp{FrankEtAl2015}, \citealp{HofmeisterVasishth2014}). There are of course other approaches possible for carrying out inference. Bayes Factors are an example; see \citet{lee2013bayesian} and \citet{rouder2012default}. Another is to define a Region of Practical Equivalence \citep{kruschke2014doing}. The reader can choose the approach they find the most appealing.
+
+%\subsection{Inference using credible intervals} \label{subsec:posteriorintervals}
+
+\begin{figure}
+\centering
+<<figcredinterval,include=TRUE,echo=FALSE,cache=TRUE,fig.width=7,fig.height=5,out.width='0.75\\textwidth'>>=
+# Get HPD interval for beta[2]
+beta1<-as.mcmc(unlist(extract(ranIntSlpFit,pars="beta[2]")))
+betaHPD<-HPDinterval(beta1,prob=0.95)
+# Get HPD interval for omega_u
+N_iter<-length(beta1)
+omega_u<-numeric(N_iter)
+L_u<-array(dim=c(2,2,N_iter))
+for(i in 1:2)
+  for(j in 1:2)
+    L_u[i,j,]<-extract(ranIntSlpFit,pars=paste("L_u[",i,",",j,"]",sep=""))[[1]]
+for(i in 1:N_iter)
+  omega_u[i] <- tcrossprod(L_u[,,i])[1,2]
+omega_u<-as.mcmc(omega_u)
+omegaHPD<-HPDinterval(omega_u,prob=0.95)
+# PLOT HPD INTERVALS ON THE MARGINAL POSTERIORS
+par(mfrow=c(1,2))
+hist(beta1,freq=FALSE,col="black",border="white",xaxt="n",
+     main=NULL,xlim=c(-.1,.1),xlab=expression(beta[1]))
+abline(v=betaHPD,lty=2,lwd=2)
+axis(1, at = seq(-.1,.1,length.out=5), labels = seq(-.1,.1,length.out=5))
+hist(omega_u,freq=FALSE,col="black",border="white",
+     main=NULL,xlab=expression(rho[u]),xlim=c(-1,1))
+abline(v=omegaHPD,lty=2,lwd=2)
+@
+\caption{Upper and lower bounds on the highest posterior density credible intervals (dashed lines) plotted over the marginal posterior distribution of the fixed slope $\beta _1$ (left) and of the correlation $\rho _u$ between the by-subject varying intercepts and varying slopes (right).} \label{fig:hpdinterval}
+\end{figure}
+
+The result of fitting the varying intercepts, varying slopes model is the posterior distribution of the model parameters. Direct inference from the posterior distributions is possible. For instance, we can find the posterior probability with which the fixed intercept $\beta _1$ or the correlation $\rho _u$ between by-subject varying intercepts and slopes take on any given value by consulting the marginal posterior distributions whose histograms are shown in Figure~\ref{fig:hpdinterval}. The information conveyed by such graphs can be sharpened by using the $95$\% credible interval, mentioned earlier.  Approximately $95$\% of the posterior density of $\beta _1$ lies between the $2.5$ percentile \Sexpr{signif(quantile(beta1,probs=.025),2)} and the $97.5$ percentile \Sexpr{signif(quantile(beta1,probs=.975),2)}.
+This leads us to conclude that the slope $\beta _1$ for relative clause type $\hbox{\texttt{so}}$ is less than zero with probability $90$\% (see Listing~\ref{fig:Model3code}, line 8). Since zero is included in the credible interval, it is difficult to draw the inference that object relative clauses are read faster than subject relative clauses. However, one could perhaps still make a weak claim to that effect, especially if a lot of evidence has accumulated in other experiments that supports such a conclusion (see \citealp{VasishthetalPLoSOne2013} for a more detailed discussion).
+
+What about the correlations between varying intercepts and varying slopes for subject and for item? What can we infer from the analysis about these relationships?
+The 95\% credible interval for $\rho _u$ is $(\Sexpr{signif(omegaHPD[1],1)},\Sexpr{signif(omegaHPD[2],1)})$. Our belief that $\rho _u$ is less than zero is rather uncertain, although we can conclude that $\rho _u$ is less than zero with probability \Sexpr{signif(100*mean(omega_u<0),0)}\%. There is only weak evidence that subjects who read faster than average exhibit greater slowdowns at the head noun of object relative clauses than subjects who read slower than average. For the by-item varying intercepts and slopes, it is pretty clear that we do not have enough data (15 items) to draw any conclusions. For these data, it probably makes sense to fit a simpler model \citep{BatesEtAlParsimonious}, with only varying intercepts and slopes for subject, and only varying intercepts for items; although there is no harm done in a Bayesian setting if we fit a model with a full variance-covariance matrix for both subjects and items.
+
+In sum, regarding our main research question, our conclusion here is that we cannot say that object relatives are harder to process than subject relatives, because the credible interval for $\beta_1$ includes $0$. However, one could argue that there is \textit{some} weak evidence in favor of the hypothesis, since the posterior probability of the parameter being negative is approximately $90$\%. 
+
+\section{Concluding remarks, and further reading}
+
+We hope that this tutorial has given the reader a flavor of what it would be like to fit Bayesian linear mixed models. There is of course much more to say on the topic, and we hope that the interested reader will take a look at some of the excellent books that have recently come out. We suggest below a sequence of reading that we found helpful.
+A good first general textbook is by \citet{gelmanhill07}; it begins with the frequentist approach and only later transitions to Bayesian models. The book by \citet{rethinking} is also excellent. 
+For those looking for a psychology-specific introduction, the books by \citet{kruschke2014doing} and \citet{lee2013bayesian} are to be recommended, although for the latter the going might be easier if the reader has already looked at \citet{gelmanhill07}.
+As a second book, \citet{lunn2012bugs} is recommended; it provides many interesting and useful examples using the BUGS language, which are discussed in exceptionally clear language. Many of these books use the BUGS syntax~\citep{lunn2000winbugs}, which the probabilistic programming language JAGS \citep{plummer2011jags} also adopts; however, Stan code for these books is slowly becoming available on the Stan home page (\url{https://github.com/stan-dev/example-models/wiki}). 
+For those with introductory calculus, a slightly more technical introduction to Bayesian methods by~\citet{lynch2007introduction} is an excellent choice. Finally, the textbook by~\citet{Gelman14} is the definitive modern guide, and provides a more advanced treatment. 
+
+\section*{Acknowledgements}
+
+We are grateful to the developers of Stan (in particular, Andrew Gelman, Bob Carpenter) and members of the Stan mailing list for their advice regarding model specification. Douglas Bates and Reinhold Kliegl have helped considerably over the years in improving our understanding of LMMs from a frequentist perspective. We also thank Edward Gibson for releasing his published data. Titus von der Malsburg and Bruno Nicenboim provided useful comments on a draft.
+
+\clearpage
+
+\bibliographystyle{apacite}
+\bibliography{SorensenEtAl}
+
+\clearpage
+
+\appendix
+
+\section{Cholesky decomposition}
+\label{sec:chol}
+
+A correlation matrix can be decomposed into a \textit{square root of the matrix}; one method is the Cholesky decomposition. Given a correlation matrix $C$, we can obtain its square root $L$; The square root of a matrix is such that we can square $L$ to get the correlation matrix $C$ back.  We illustrate the matrix square root with a simple example. Suppose we have a correlation matrix:
 
 \begin{equation}
 C=\begin{pmatrix}
@@ -711,7 +1015,7 @@ L=\begin{pmatrix}
 \end{pmatrix}
 \end{equation}
 
-We can confirm that this is a square root by multiplying L with itself to get the correlation matrix back (squaring a matrix is done by multiplying the matrix by its transpose):
+We confirm that this is a square root by multiplying L with itself to get the correlation matrix back (squaring a matrix is done by multiplying the matrix by its transpose):
 
 \begin{equation}
 L L^\intercal=
@@ -828,87 +1132,6 @@ xDistribution()
 
 This digression into Cholesky decomposition and the generation of correlated random variables is important to understand for building the Stan model. We will define a vague prior distribution on $L$ --- the square root of the correlation matrix --- and a vague prior on the standard deviations. This allows us to generate the by-subject and by-item adjustments to the fixed effects intercepts and slopes.
 
-\paragraph{Defining the model}
-
-\singlespacing
-\begin{listing}
-% <<Model3code, eval=FALSE>>=
-\begin{Verbatim}[numbers=left,frame=single,fontfamily=courier,fontsize=\footnotesize]
-ranIntSlpFit <- stan(file = "ranIntSlp.stan", data = stanDat,
-                     iter = 2000, chains = 4)
-
-# posterior probability of beta 1 being less
-# than 0:
-beta1 <- unlist(extract(ranIntSlpFit, pars = "beta[2]"))
-print(quantile(beta1, probs = c(0.025, 0.5, 0.975)))
-mean(beta1 < 0)
-\end{Verbatim}
-% @
-\caption{Code for running Model 3, the varying intercepts, varying slopes model.}\label{fig:Model3code}
-\end{listing}
-\doublespacing
-
-
-\begin{listing}
-\begin{Verbatim}[numbers=left,frame=single,fontfamily=courier,fontsize=\footnotesize]
-data {
-  int<lower=1> N;                  //number of data points
-  real rt[N];                      //reading time
-  real<lower=-1, upper=1> so[N];   //predictor
-  int<lower=1> J;                  //number of subjects
-  int<lower=1> K;                  //number of items
-  int<lower=1, upper=J> subj[N];   //subject id
-  int<lower=1, upper=K> item[N];   //item id
-}
-
-parameters {
-  vector[2] beta;                  //intercept and slope
-  real<lower=0> sigma_e;           //error sd
-  vector<lower=0>[2] sigma_u;      //subj sd
-  vector<lower=0>[2] sigma_w;      //item sd
-  cholesky_factor_corr[2] L_u;
-  cholesky_factor_corr[2] L_w;
-  matrix[2,J] z_u;
-  matrix[2,K] z_w;
-}
-
-transformed parameters{
-  matrix[2,J] u;
-  matrix[2,K] w;
-  
-  u <- diag_pre_multiply(sigma_u, L_u) * z_u;  //subj random effects
-  w <- diag_pre_multiply(sigma_w, L_w) * z_w;  //item random effects
-}
-
-model {
-  real mu;
-  //priors
-  L_u ~ lkj_corr_cholesky(2.0);
-  L_w ~ lkj_corr_cholesky(2.0);
-  to_vector(z_u) ~ normal(0,1);
-  to_vector(z_w) ~ normal(0,1);
-  //likelihood
-  for (i in 1:N){
-    mu <- beta[1] + u[1,subj[i]] + w[1,item[i]] 
-          + (beta[2] + u[2,subj[i]] + w[2,item[i]]) * so[i];
-    rt[i] ~ lognormal(mu, sigma_e);
-  }
-}
-\end{Verbatim}
-\caption{The Stan code for Model 3, the varying intercepts, varying slopes model.}\label{fig:Model3Stancode}
-\end{listing}
-
-
-With this background, implementing the varying intercepts, varying slope Model~\ref{eq:ranslp} is straightforward; see Listing~\ref{fig:Model3code} for the R code and Listing~\ref{fig:Model3Stancode} for the Stan code. The R list \texttt{stanDat} is identical to the one of Model 3, and therefore we will focus on the Stan code.
-The data block is the same as before.
-The parameters block contains several new parameters. 
-This time, we have vectors \texttt{sigma\_u} and \texttt{sigma\_w} which are $(\sigma _{u0},\sigma _{u1})^\intercal $ and $(\sigma _{w0},\sigma _{w1})^\intercal $, instead of scalar values as in Model~\ref{eq:ranint}. 
-The variables \texttt{L\_u}, \texttt{L\_w}, \texttt{z\_u}, and \texttt{z\_w}, which have been declared in the parameters block, play a role in the \textit{transformed parameters block}, a block which we did not use in the earlier models. The transformed parameters block generates the by-subject and by-item varying intercepts and slopes using the parameters \texttt{sigma\_u}, \texttt{sigma\_w}, \texttt{L\_u}, \texttt{L\_w}, \texttt{z\_u}, and \texttt{z\_w}.  The $J$ pairs of by-subject varying intercepts and slopes are in the rows of the $J\times 2$ matrix \texttt{u}, and the $K$ pairs of by-item varying intercepts and slopes are in the rows of the $K\times 2$ matrix \texttt{w}.
-
-These varying intercepts and slopes are obtained through the statements \texttt{diag\_pre\_multiply(sigma\_u, L\_u) * z\_u} and \texttt{diag\_pre\_multiply(sigma\_w, L\_w) * z\_w}.
-This statement generates varying intercepts and slopes from the joint probability distribution of equation~\ref{eq:jointpriordist1}. 
-The parameters \texttt{L\_u}, \texttt{L\_w} are the Cholesky decompositions of the subject and item correlation matrices, respectively, and  \texttt{z\_u}, and \texttt{z\_w}  are $\mathcal N(0,1)$ random variables.
-
 It is helpful to walk through steps 1 to 4 involved in generating the varying intercepts and slopes using the procedure described above for generating correlated random variables. The statement \texttt{diag\_pre\_multiply(sigma\_u, L\_u) * z\_u} computes the transpose matrix product (steps 1 and 2). The right multiplication of this product by \texttt{z\_u}, a matrix of normally distributed random variables (step 3), yields the varying intercepts and slopes (step 4).
 
 \begin{equation}
@@ -921,7 +1144,7 @@ u_{0J} & u_{1J}
 \end{pmatrix}
 &=
 \big( \text{diag}(\sigma _{u0}, \sigma _{u1})
-\mathbf{L}_u \mathbf{z}_u \big)^\intercal\\
+L_u \mathbf{z}_u \big)^\intercal\\
 &=
 \left(\begin{pmatrix}
 \sigma _{u0} & 0\\
@@ -937,202 +1160,14 @@ z_{21} & z_{22} & \ldots & z_{2J}\\
 \end{pmatrix}\right)^\intercal
 \end{split}
 \end{equation} 
- 
-Turning to the model block, here, we place priors on the parameters declared in the parameters block, and define how these parameters generate $\log \hbox{\texttt{rt}}$ (Listing~\ref{fig:Model3Stancode}, lines 30--42).
-The definition of the prior \texttt{L\_u $\sim $ lkj\_corr\_cholesky(2.0)} implicitly places a so-called lkj prior with shape parameter $\eta =2.0$ on the correlation matrices
 
-\begin{equation}
-\begin{pmatrix}
-1 & \rho _u\\
-\rho _u & 1
-\end{pmatrix}
-\text{ and }
-\begin{pmatrix}
-1 & \rho _w\\
-\rho _w & 1
-\end{pmatrix},
-\end{equation}
+\section{Matrix formulation of the linear mixed model }
+\label{sec:matrix}
 
-\noindent
-where $\rho _u$ is the correlation between the by-subject varying intercept $\sigma _{u0}$ and slope $\sigma _{u1}$ (cf.\ the covariance matrix of Equation~\ref{eq:covmat}) and $\rho _w$ is the correlation between the by-item varying intercept $\sigma _{w0}$ and slope $\sigma _{w1}$. The lkj distribution with shape parameter $\eta =1.0$ is a uniform prior over all $2\times 2$ correlation matrices; it scales up to larger correlation matrices. The parameter $\eta$ has an effect on the shape of the lkj distribution. Our choice of $\eta=2.0$ implies that the correlations in the off-diagonals are near zero, reflecting the fact that we have no prior information about the correlation between intercepts and slopes.
-
-The statement \texttt{to\_vector(z\_u) $\sim $ normal(0,1)} places a normal distribution with mean zero and standard deviation one on \texttt{z\_u}. The same goes for \texttt{z\_w}. The for-loop assigns to $\hbox{\texttt{mu}}$ the mean of the log-normal distribution from which we draw $\hbox{\texttt{rt[i]}}$, conditional on the value of the predictor \texttt{so[i]} for relative clause type and the subject and item identity.
-
-We can now fit the varying intercepts, varying slopes Model 3; see Listing~\ref{fig:Model3code} for the code. We see in the model summary in Table~\ref{tab:Model3posterior} that the model has converged, and that the credible intervals of the parameter of interest, $\beta_1$, still include $0$. In fact, the posterior probability of the parameter being less than $0$ is now $90$\% (this information can be extracted as shown in Listing~\ref{fig:Model3code}, lines 6--8). 
-
-\begin{table}[htp]
-\begin{center}
-\begin{tabular}{crrrr}
-\hline
-parameter        & mean   & 2.5\%  &97.5\% & $\hat R$\\
-\hline
-$\hat \beta_0$ & 6.06 &   5.92  & 6.21  &  1\\
-$\hat \beta_1$ &  $-0.04$    &   $-0.09$  & 0.02 &  1\\
-$\hat \sigma_e$ &   0.51   &     0.48 &  0.55 &  1\\
-$\hat \sigma_{u0}$ & 0.25   &    0.19  &  0.34 & 1\\
-$\hat \sigma_{u1}$ & 0.07   &    0.01  &  0.14 & 1\\
-$\hat \sigma_{w0}$ & 0.20  &       0.13  &  0.32 &     1\\
-$\hat \sigma_{w1}$ & 0.04  &       0.0  &  0.10 &     1\\
-\hline
-\end{tabular}
-\end{center}
-\caption{The quantiles and the $\hat R$ statistic in the Gibson and Wu data, the varying intercepts, varying slopes model.}\label{tab:Model3posterior}
-\end{table}
-
-Figure~\ref{fig:lmlist} plots the varying slope's posterior distribution against the varying intercept's posterior distribution for each subject. The correlation between $u_0$ and $u_1$ is negative, as captured by the marginal posterior distributions of the correlation $\rho _u$ between $u_0$ and $u_1$. Thus, Figure~\ref{fig:lmlist} suggests that the slower a subject's reading time is on average, the slower they read object relatives. In contrast, Figure~\ref{fig:lmlist} shows no clear pattern for the by-item varying intercepts and slopes. The broader distribution of the correlation parameter for items compared to slopes illustrates the greater uncertainty concerning the true value of the parameter. We briefly discuss inference next.
-
-\begin{figure}[!htbp]
-\centering
-<<figrandintslopes,include=TRUE,echo=FALSE,cache=TRUE,fig.width=7,fig.height=5,out.width='0.75\\textwidth'>>=
-magnify<-0.80
-## load data:
-rDat<-read.table("../data/gibsonwu2012data.txt",header=TRUE)
-rDat<-subset(rDat,region=="headnoun")
-J<-length(unique(rDat$subj))
-K<-length(unique(rDat$item))
-
-# Load the varying intercepts, varying slopes effects model.
-load("../data/ranIntSlpFit.Rda")
-u<-matrix(nrow=2,ncol=J)
-for(j in 1:J)
-  for(i in 1:2)
-    u[i,j]<-mean(extract(ranIntSlpFit,pars=c(paste("u[",i,",",j,"]",sep="")))[[1]])
-N_sample<-length(extract(ranIntSlpFit,pars="L_u[1,1]")[[1]])
-L_u<-array(dim=c(2,2,N_sample))
-for(i in 1:2)
-  for(j in 1:2)
-    L_u[i,j,]<-extract(ranIntSlpFit,pars=c(paste("L_u[",i,",",j,"]",sep="")))[[1]]
-omega_u<-numeric()
-for(i in 1:N_sample){
-  Omega_u<-L_u[,,i]%*%t(L_u[,,i])
-  omega_u[i]<-Omega_u[1,2]
-}
-# Extract item random intercepts and slopes.
-w<-matrix(nrow=2,ncol=K)
-for(k in 1:K)
-  for(i in 1:2)
-    w[i,k]<-mean(extract(ranIntSlpFit,pars=c(paste("w[",i,",",k,"]",sep="")))[[1]])
-L_w<-array(dim=c(2,2,N_sample))
-for(i in 1:2)
-  for(j in 1:2)
-    L_w[i,j,]<-extract(ranIntSlpFit,pars=c(paste("L_w[",i,",",j,"]",sep="")))[[1]]
-omega_w<-numeric()
-for(i in 1:N_sample){
-  Omega_w<-L_w[,,i]%*%t(L_w[,,i])
-  omega_w[i]<-Omega_w[1,2]
-}
-# Visualize the posterior distribution for the intercept beta[1] ...
-par(mfrow=c(2,2),pch=21,bg="white")
-plot(u[1,],u[2,],bg="black",mgp=c(2,.25,0),
-     xlim=c(-.6,.6),ylim=c(-0.10,0.10),
-     xlab=expression(u[0]),ylab=expression(u[1]),
-     cex.axis=magnify)
-plot(w[1,],w[2,],bg="black",mgp=c(2,.25,0),
-     xlim=c(-.6,.6),ylim=c(-.10,.10),
-     xlab=expression(w[0]),ylab=expression(w[1]),
-     cex.axis=magnify)
-hist(omega_u,freq=FALSE,col="black",border="white",
-     main=NULL,xlab=expression(rho[u]))
-hist(omega_w,freq=FALSE,col="black",border="white",
-     main=NULL,xlab=expression(rho[w]))
-@
-\caption{The top row shows the relationship between the varying slopes (y-axis) and intercepts (x-axis) for each subject (left panel) and item (right panel). The bottom row shows the posterior distribution of the parameter of correlation between the varying slopes and intercepts for each subject (left panel) and item (right panel).}
-\label{fig:lmlist}
-\end{figure}
-
-
-\paragraph{Random effects in a non-Bayesian LMM}
-
-We fit the same model also as a classical non-Bayesian LMM with the \texttt{lmer} function from the \texttt{lme4} package. This allows for comparing the results to the Stan results. Here, we focus on random effects. As illustrated in Figure \ref{fig:lmercomp}, the estimates of the random-effect standard deviations of the classical LMM are in agreement with the modes of the posterior distributions. However, the classical LMM is overparameterized due to an insufficient number of data points. Hence, correlations between random effects could not be estimated, as indicated by perfect correlations of $-1$ and $1$. In contrast, Stan can still estimate posterior distributions for these parameters (Figure \ref{fig:lmlist}).
-
-\begin{figure}[!htbp]
-\centering
-<<figlmercomp,include=TRUE,echo=FALSE,cache=TRUE,message=FALSE,fig.width=7,fig.height=5,out.width='0.75\\textwidth'>>=
-library(lme4)
-# fit LMM and extract random-effect variances
-so <- ifelse(rDat$type == "obj-ext", 1, -1)
-LMMFit <- lmer(log(rt) ~ so + (1 + so | subj) + (1 + so | item), rDat)
-vc <- VarCorr(LMMFit)
-sigma_u <- attr(vc[["subj"]], "stddev")
-sigma_w <- attr(vc[["item"]], "stddev")
-
-# extract values from Stan object
-sigma_u_stan <- extract(ranIntSlpFit, "sigma_u")[[1]]
-sigma_w_stan <- extract(ranIntSlpFit, "sigma_w")[[1]]
-
-# plot
-layout(matrix(1:4, nrow = 2, byrow = TRUE))
-sigma_u0_dens <- density(sigma_u_stan[ , 1])
-plot(sigma_u0_dens, main = NA, xlab = expression(sigma[u0]))
-abline(v = sigma_u[1])
-sigma_u1_dens <- density(sigma_u_stan[ , 2])
-plot(sigma_u1_dens, main = NA, xlab = expression(sigma[u1]))
-abline(v = sigma_u[2])
-sigma_w0_dens <- density(sigma_w_stan[ , 1])
-plot(sigma_w0_dens, main = NA, xlab = expression(sigma[w0]))
-abline(v = sigma_w[1])
-sigma_w1_dens <- density(sigma_w_stan[ , 2])
-plot(sigma_w1_dens, main = NA, xlab = expression(sigma[w1]))
-abline(v = sigma_w[2])
-@
-\caption{The curves show the density of the posterior distributions of the random-effect standard deviations. The vertical bars indicate the corresponding \texttt{lmer} estimates. The top row shows the random effects for subjects, the bottom row shows the random effects for items. Left-hand panels correspond to random intercepts, right-hand panels correspond to random slopes.}
-\label{fig:lmercomp}
-\end{figure}
-
-
-\section{Inference} \label{sec:bda}
- 
-Having fit a varying intercepts, varying slopes Model 3, we now explain one way to carry out statistical inference, using  credible intervals.  
-We have used this approach to draw inferences from data in previously published work (e.g., \citealp{FrankEtAl2015}, \citealp{HofmeisterVasishth2014}). There are of course other approaches possible for carrying out inference. Bayes Factors are an example; see \citet{lee2013bayesian} and \citet{rouder2012default}. Another is to define a Region of Practical Equivalence \citep{kruschke2014doing}. The reader can choose the approach they find the most appealing.
-
-%\subsection{Inference using credible intervals} \label{subsec:posteriorintervals}
-
-\begin{figure}
-\centering
-<<figcredinterval,include=TRUE,echo=FALSE,cache=TRUE,fig.width=7,fig.height=5,out.width='0.75\\textwidth'>>=
-# Get HPD interval for beta[2]
-beta1<-as.mcmc(unlist(extract(ranIntSlpFit,pars="beta[2]")))
-betaHPD<-HPDinterval(beta1,prob=0.95)
-# Get HPD interval for omega_u
-N_iter<-length(beta1)
-omega_u<-numeric(N_iter)
-L_u<-array(dim=c(2,2,N_iter))
-for(i in 1:2)
-  for(j in 1:2)
-    L_u[i,j,]<-extract(ranIntSlpFit,pars=paste("L_u[",i,",",j,"]",sep=""))[[1]]
-for(i in 1:N_iter)
-  omega_u[i] <- tcrossprod(L_u[,,i])[1,2]
-omega_u<-as.mcmc(omega_u)
-omegaHPD<-HPDinterval(omega_u,prob=0.95)
-# PLOT HPD INTERVALS ON THE MARGINAL POSTERIORS
-par(mfrow=c(1,2))
-hist(beta1,freq=FALSE,col="black",border="white",xaxt="n",
-     main=NULL,xlim=c(-.1,.1),xlab=expression(beta[1]))
-abline(v=betaHPD,lty=2,lwd=2)
-axis(1, at = seq(-.1,.1,length.out=5), labels = seq(-.1,.1,length.out=5))
-hist(omega_u,freq=FALSE,col="black",border="white",
-     main=NULL,xlab=expression(rho[u]),xlim=c(-1,1))
-abline(v=omegaHPD,lty=2,lwd=2)
-@
-\caption{Upper and lower bounds on the credible intervals
- (dashed lines) plotted over the marginal posterior distribution of the fixed slope $\beta _1$ (left) and of the correlation $\rho _u$ between the by-subject varying intercepts and varying slopes (right).} \label{fig:hpdinterval}
-\end{figure}
-
-The result of fitting the varying intercepts, varying slopes Model~\ref{eq:ranslp} is the posterior distribution of the model parameters. As mentioned above in connection with Models 1-3, direct inference from the posterior distributions is possible. For instance, we can find the posterior probability with which the fixed intercept $\beta _1$ or the correlation $\rho _u$ between by-subject varying intercepts and slopes take on any given value by consulting the marginal posterior distributions whose histograms are shown in Figure~\ref{fig:hpdinterval}. The information conveyed by such graphs can be sharpened by using the $95$\% credible interval, mentioned earlier.  Approximately $95$\% of the posterior density of $\beta _1$ lies between the $2.5$ percentile \Sexpr{signif(quantile(beta1,probs=.025),2)} and the $97.5$ percentile \Sexpr{signif(quantile(beta1,probs=.975),2)}.
-This leads us to conclude that the slope $\beta _1$ for relative clause type $\hbox{\texttt{so}}$ is less than zero with probability $90$\% (see line 8 in Listing~\ref{fig:Model3code}). Since $0$ is included in the credible interval, it is difficult to draw the inference that object relative clauses are read faster than subject relative clauses. However, one could perhaps still make a weak claim to that effect, especially if a lot of evidence has accumulated in other experiments that supports such a conclusion (see \citealp{VasishthetalPLoSOne2013} for a more detailed discussion).
-
-What about the correlations between varying intercepts and varying slopes for subject and for item? What can we infer from the analysis about these relationships?
-The 95\% credible interval for $\rho _u$ is $(\Sexpr{signif(omegaHPD[1],1)},\Sexpr{signif(omegaHPD[2],1)})$. Our belief that $\rho _u$ is less than zero is rather uncertain, although we can conclude that $\rho _u$ is less than zero with probability \Sexpr{signif(100*mean(omega_u<0),0)}\%. There is only weak evidence that subjects who read faster than average exhibit greater slowdowns at the head noun of object relative clauses than subjects who read slower than average. For the by-item varying intercepts and slopes, it is pretty clear that we do not have enough data (15 items) to draw any conclusions. For these data, it probably makes sense to fit a simpler model \citep{BatesEtAlParsimonious}, with only varying intercepts and slopes for subject, and only varying intercepts for items; although there is no harm done in a Bayesian setting if we fit a model with a full variance-covariance matrix for both subjects and items.
-
-In sum, regarding our main research question, our conclusion here is that we cannot say that object relatives are harder to process than subject relatives, because the credible interval for $\beta_1$ includes $0$. However, one could argue that there is \textit{some} weak evidence in favor of the hypothesis, since the posterior probability of the parameter being negative is approximately $90$\%. 
-
-
-\section{Matrix formulation of the linear mixed model }\label{sec:matrix}
-
-We fit three models with increasing complexity to the data-set. In all specifications, there was an explicit vector \texttt{so} for the predictor variable in Stan. However, if we want to fit more complex models with a multitude of categorical and continuous predictors and interactions, this approach requires increasingly complex specifications in Stan code. Alternatively, we can use the matrix formulation of the linear mixed model that allows for using the same code for models of different complexity. In the following, we will apply this approach for an alternative version of Model 3 including random intercepts and slopes for subjects and items (Equation \ref{eq:ranslp}).
+In the body of the text, we fit three models with increasing complexity to the data-set. In all specifications, there was an explicit vector \texttt{so} for the predictor variable in Stan. However, if we want to fit more complex models with many categorical and continuous predictors and interactions, this approach requires increasingly complex specifications in Stan code. Alternatively, we can use the matrix formulation of the linear mixed model that allows for using the same code for models of different complexity. In the following, we will apply this approach for an alternative version of the varying intercepts, varying slopes model including random intercepts and slopes for subjects and items (Equation \ref{eq:ranslp}).
 
 Again, we fit a varying intercepts, varying slopes model.
-The grand mean $\beta _0$ of $\log \hbox{\texttt{rt}}$ is adjusted by subject and by item through the varying intercepts $u_0$ and $w_0$, which are unique values for each subject and item respectively. Likewise, the fixed effect $\beta _1$, which is associated with the predictor $\hbox{\texttt{so}}$, is adjusted by the by-subject varying slope $u_1$ and by-item varying slope $w_1$.
+The grand mean $\beta _0$ of $\log \hbox{\texttt{rt}}$ is adjusted by subject and by item through the varying intercepts $u_0$ and $w_0$, which are unique values for each subject and item, respectively. Likewise, the fixed effect $\beta _1$, which is associated with the predictor $\hbox{\texttt{so}}$, is adjusted by the by-subject varying slope $u_1$ and by-item varying slope $w_1$.
 
 It is more convenient to represent this model in matrix form. We build up the model specification by first noting that, for each subject,  
 the by-subject varying intercept $u_0$ and slope $u_1$ have a multivariate normal prior distribution with mean zero and covariance matrix $\Sigma _u$. Similarly, for each item, the by-item varying intercept $w_0$ and slope $w_1$ have a multivariate normal prior distribution with mean zero and covariance matrix $\Sigma _w$.
@@ -1178,26 +1213,26 @@ matrixFit <- stan(file = "matrixModel.stan", data = stanDat,
 \end{listing}
 \doublespacing
 
-Note that we remove the column names and the attributes of the model matrix \texttt{X} in order to use it for Stan; please refer to Listing~\ref{fig:matrixModelCode}. Having defined the model, we proceed to assemble the list \texttt{stanDat} of data, relying on the above matrix formulation. The number \texttt{N} of observations, the number \texttt{J} of subjects and \texttt{K} of items, the reading times \texttt{rt}, and the subject and item indicator variables \texttt{subj} and \texttt{item} are familiar from the previous models presented. The integer \texttt{P} is the number of fixed effects (two including the intercept). Model 4 includes a varying intercept $u_{0}$ and a varying slope $u_{1}$ for each subject, and so the number \texttt{n\_u} of by-subject random effects equals \texttt{P}. Likewise, Model 4 includes a varying intercept $w_{0}$ and a varying slope $w_{1}$ for each item, and so the number \texttt{n\_w} of by-item random effects also equals \texttt{P}. 
+Note that we remove the column names and the attributes of the model matrix \texttt{X} in order to use it for Stan; refer to Listing~\ref{fig:matrixModelCode}. Having defined the model, we proceed to assemble the list \texttt{stanDat} of data, relying on the above matrix formulation. The number \texttt{N} of observations, the number \texttt{J} of subjects and \texttt{K} of items, the reading times \texttt{rt}, and the subject and item indicator variables \texttt{subj} and \texttt{item} are familiar from the previous models presented. The integer \texttt{P} is the number of fixed effects (two including the intercept). Model 4 includes a varying intercept $u_{0}$ and a varying slope $u_{1}$ for each subject, and so the number \texttt{n\_u} of by-subject random effects equals \texttt{P}. Likewise, Model 4 includes a varying intercept $w_{0}$ and a varying slope $w_{1}$ for each item, and so the number \texttt{n\_w} of by-item random effects also equals \texttt{P}. 
 
 \begin{listing}
 \begin{Verbatim}[numbers=left,frame=single,fontfamily=courier,fontsize=\footnotesize]
 data {
-  int<lower=0> N;               //no trials
-  int<lower=1> P;               //no fixefs
-  int<lower=0> J;               //no subjects
-  int<lower=1> n_u;             //no subj ranefs
-  int<lower=0> K;               //no items
-  int<lower=1> n_w;             //no item ranefs
+  int<lower=0> N;               //n trials
+  int<lower=1> P;               //n fixefs
+  int<lower=0> J;               //n subjects
+  int<lower=1> n_u;             //n subj ranefs
+  int<lower=0> K;               //n items
+  int<lower=1> n_w;             //n item ranefs
   int<lower=1,upper=J> subj[N]; //subject indicator
   int<lower=1,upper=K> item[N]; //item indicator
-  row_vector[P] X[N];           //fixef design matrix
+  row_vector[P] X[N];           //fixed effects design matrix
   row_vector[n_u] Z_u[N];       //subj ranef design matrix
   row_vector[n_w] Z_w[N];       //item ranef design matrix
   vector[N] rt;                 //reading time
 }
 parameters {
-  vector[P] beta;               //fixef coefs
+  vector[P] beta;               //fixed effects coefs
   cholesky_factor_corr[n_u] L_u;  //cholesky factor of subj ranef corr matrix
   cholesky_factor_corr[n_w] L_w;  //cholesky factor of item ranef corr matrix
   vector<lower=0>[n_u] sigma_u; //subj ranef std
@@ -1240,32 +1275,12 @@ model {
 \end{listing}
 
 We also have to adapt the Stan code to the model formulation (see Listing~\ref{fig:StanCodeMatrixModel}). The data block contains the corresponding variables. Using the command \verb|row_vector[P] X[N]|, we declare the fixed effects design matrix \texttt{X} as an array of \texttt{N} row vectors of length \texttt{P} whose components are the predictors associated with the \texttt{N} reading times. Likewise for the subject and item random effects design matrices \texttt{Z\_u} and \texttt{Z\_w}, which correspond to $\mathbf{Z}_{u}$ and $\mathbf{Z}_{w}$ respectively in Equation~\ref{eq:matrixmodel}. 
-The vector \texttt{beta} contains the fixed effects $\beta _0$ and $\beta_1$. The matrices \texttt{L\_u}, \texttt{L\_w} and the arrays \texttt{z\_u}, \texttt{z\_w} of vectors (not to be confused with the design matrices \texttt{Z\_u} and \texttt{Z\_w}) will generate the varying intercepts and slopes $u_0, u_1$ and $w_0, w_1$, using the procedure described for Model 3. For example, the command \verb|vector[n_u] u[J]| specifies \texttt{u} as an array of \texttt{J} vectors of length \texttt{n\_u}; hence, there is one vector per subject. The vector \texttt{sigma\_u} contains the standard deviations of the by-subject varying intercepts and slopes $u_0, u_1$, and the vector \texttt{sigma\_w} contains the standard deviations of the by-item varying intercepts and slopes $w_0, w_1$. The variable \texttt{sigma\_e} is the standard deviation $\sigma _e$ of the error $\varepsilon$.
+The vector \texttt{beta} contains the fixed effects $\beta _0$ and $\beta_1$. The matrices \texttt{L\_u}, \texttt{L\_w} and the arrays \texttt{z\_u}, \texttt{z\_w} of vectors (not to be confused with the design matrices \texttt{Z\_u} and \texttt{Z\_w}) will generate the varying intercepts and slopes $u_0, u_1$ and $w_0, w_1$, using the procedure described for the varying intercepts, varying slopes model. For example, the command \verb|vector[n_u] u[J]| specifies \texttt{u} as an array of \texttt{J} vectors of length \texttt{n\_u}; hence, there is one vector per subject. The vector \texttt{sigma\_u} contains the standard deviations of the by-subject varying intercepts and slopes $u_0, u_1$, and the vector \texttt{sigma\_w} contains the standard deviations of the by-item varying intercepts and slopes $w_0, w_1$. The variable \texttt{sigma\_e} is the standard deviation $\sigma _e$ of the error $\varepsilon$.
 The transformed parameters block generates the by-subject intercepts and slopes $u_0, u_1$ and the by-item intercepts and slopes $w_0, w_1$.
 
 We place lkj priors on the random effects correlation matrices through the \texttt{lkj\_corr\_cholesky(2.0)} priors on their Cholesky factors \texttt{L\_u} and \texttt{L\_w}. We implicitly place uniform priors on the fixed effects $\beta _0, \beta_1$, the random effects standard deviations $\sigma _{u0}, \sigma_{u1}$, and $\sigma _{w0}, \sigma_{w1}$ and the error standard deviation $\sigma _e$ by omitting any prior specifications for them in the model block. We specify the likelihood with the probability statement that \texttt{rt[i]} is distributed log-normally with mean \texttt{X[i] * beta + Z\_u[i] * u[subj[i]] + Z\_w[i] * w[item[i]]} and standard deviation \texttt{sigma\_e}.
 The next step towards model-fitting is to pass the list \texttt{stanDat} to \texttt{stan}, which compiles a C++ program to sample from the posterior distribution of the model parameters.
 
 A major advantage of the above matrix formulation is that we do not need to write a new Stan model for a future repeated measures design. All we have to do now is define the design matrix $\mathbf X$ appropriately, and include it (along with appropriately defined $\mathbf Z_u$ and $\mathbf Z_w$ for the subjects and items random effects) as part of the data specification that is passed to Stan. 
-
-
-\section{Concluding remarks, and further reading}
-
-We hope that this tutorial has given the reader a flavor of what it would be like to fit Bayesian linear mixed models. There is of course much more to say on the topic, and we hope that the interested reader will take a look at some of the excellent books that have recently come out. We suggest below a sequence of reading that we found helpful.
-A good first general textbook is by \citet{gelmanhill07}; it begins with the frequentist approach and only later transitions to Bayesian models. The book by \citet{rethinking} is also excellent. 
-For those looking for a psychology-specific introduction, the books by \citet{kruschke2014doing} and \citet{lee2013bayesian} are to be recommended, although for the latter the going might be easier if the reader has already looked at \citet{gelmanhill07}.
-As a second book, \citet{lunn2012bugs} is recommended; it provides many interesting and useful examples using the BUGS language, which are discussed in exceptionally clear language. Many of these books use the BUGS syntax~\citep{lunn2000winbugs}, which the probabilistic programming language JAGS \citep{plummer2011jags} also adopts; however, Stan code for these books is slowly becoming available on the Stan home page (\url{https://github.com/stan-dev/example-models/wiki}). 
-For those with introductory calculus, a slightly more technical introduction to Bayesian methods by~\citet{lynch2007introduction} is an excellent choice. Finally, the textbook by~\citet{Gelman14} is the definitive modern guide, and provides a more advanced treatment. 
-
-\section*{Acknowledgements}
-
-We are grateful to the developers of Stan (in particular, Andrew Gelman, Bob Carpenter) and members of the Stan mailing list for their advice regarding model specification. Douglas Bates and Reinhold Kliegl have helped considerably over the years in improving our understanding of LMMs from a frequentist perspective. We also thank Edward Gibson for releasing his published data. Titus von der Malsburg and Bruno Nicenboim provided useful comments on a draft.
-
-\clearpage
-
-\bibliographystyle{apacite}
-\bibliography{SorensenEtAl}
-
-\clearpage
 
 \end{document}
