@@ -43,7 +43,7 @@ University of Potsdam, Potsdam, Germany
 }
 {
 University of Potsdam, Potsdam, Germany, and \\
-School of Mathematics and Statistics, University of Sheffield, Sheffield, UK}
+CEREMADE, Universit\'e-Paris Dauphine, Paris, Germany}
 
 % Based off of code provided in a question by Melvin Roest on tex.stackexchange.com
 % (http://tex.stackexchange.com/questions/176745/strange-knitr-behavior-with-apa6-class-manuscript)
