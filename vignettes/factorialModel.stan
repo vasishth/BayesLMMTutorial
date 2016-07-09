@@ -30,12 +30,12 @@ transformed parameters {
   {
     matrix[n_u,n_u] Sigma_u;    //subj ranef cov matrix
     matrix[n_w,n_w] Sigma_w;    //item ranef cov matrix
-    Sigma_u <- diag_pre_multiply(sigma_u,L_u);
-    Sigma_w <- diag_pre_multiply(sigma_w,L_w);
+    Sigma_u = diag_pre_multiply(sigma_u,L_u);
+    Sigma_w = diag_pre_multiply(sigma_w,L_w);
     for(j in 1:J)
-      u[j] <- Sigma_u * z_u[j];
+      u[j] = Sigma_u * z_u[j];
     for(k in 1:K)
-      w[k] <- Sigma_w * z_w[k];
+      w[k] = Sigma_w * z_w[k];
   }
 }
 

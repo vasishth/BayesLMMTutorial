@@ -24,7 +24,7 @@ model {
   w ~ normal(0,sigma_w);    //item random effects
   // likelihood
   for (i in 1:N){
-    mu <- beta[1] + u[subj[i]] + w[item[i]] + beta[2]*so[i];
+    mu = beta[1] + u[subj[i]] + w[item[i]] + beta[2]*so[i];
     rt[i] ~ lognormal(mu,sigma_e);
   }
 }

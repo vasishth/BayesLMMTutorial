@@ -23,8 +23,8 @@ transformed parameters{
   matrix[2,J] u;
   matrix[2,K] w;
   
-  u <- diag_pre_multiply(sigma_u,L_u) * z_u;	//subj random effects
-  w <- diag_pre_multiply(sigma_w,L_w) * z_w;	//item random effects
+  u = diag_pre_multiply(sigma_u,L_u) * z_u;	//subj random effects
+  w = diag_pre_multiply(sigma_w,L_w) * z_w;	//item random effects
 }
 
 model {
@@ -36,7 +36,7 @@ model {
   to_vector(z_w) ~ normal(0,1);
   //likelihood
   for (i in 1:N){
-    mu <- beta[1] + u[1,subj[i]] + w[1,item[i]] 
+    mu = beta[1] + u[1,subj[i]] + w[1,item[i]] 
           + (beta[2] + u[2,subj[i]] + w[2,item[i]])*so[i];
     rt[i] ~ lognormal(mu,sigma_e);
   }
