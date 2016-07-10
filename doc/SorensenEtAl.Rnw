@@ -592,7 +592,7 @@ $\hat \sigma_w$ & 0.20  &       0.12  &  0.32 &     1\\
 
 The varying intercepts model accounted for having multiple measurements from each subject and item by introducing random intercepts by subject and by item. This reflects that some subjects will be faster and some slower than average, and that some items will be read faster than average, and some slower. 
 Consider now that not only does reading speed differ by subject and by item, but also the slowdown in the object relative condition may differ in magnitude by subject and item. This amounts to a different effect size for \texttt{so} by subject and item. 
-Although such individual-level variability was not of interest in the original paper by Gibson and Wu, it could be of theoretical interest  (see, for example, \citealp{kliegl2010experimental}). Furthermore, as \citet{barr2011random} point out, it is in principle desirable to include a fixed effect factor in the random effects as a varying slope if the experiment design is such that subjects see both levels of the factor (cf.\ \citealp{BatesEtAlParsimonious}).
+Although such individual-level variability was not of interest in the original paper by Gibson and Wu, it could be of theoretical interest  (see, for example, \citealp{kliegl2010experimental}). Furthermore, as \citet{barr2011random} point out, it is in principle desirable to include a fixed effect factor in the random effects as a varying slope if the experiment design is such that subjects see both levels of the factor (cf.\ \citealp{BatesEtAlParsimonious,hannesBEAP,CaveOfShadows}).
 
 \paragraph{Adding varying slopes}
 
@@ -968,7 +968,9 @@ hist(omega_w,freq=FALSE,col="black",border="white",
 
 \paragraph{Random effects in a non-Bayesian LMM}
 
-We fit the same model also as a classical non-Bayesian LMM with the \texttt{lmer} function from the \texttt{lme4} package. This allows for comparing the results to the Stan results. Here, we focus on random effects. As illustrated in Figure \ref{fig:lmercomp}, the estimates of the random-effect standard deviations of the classical LMM are in agreement with the modes of the posterior distributions. However, the classical LMM is overparameterized due to an insufficient number of data points. Hence, correlations between random effects could not be estimated, as indicated by perfect correlations of $-1$ and $1$. In contrast, Stan can still estimate posterior distributions for these parameters (Figure \ref{fig:lmlist}).
+We fit the same model also as a classical non-Bayesian LMM with the \texttt{lmer} function from the \texttt{lme4} package. This allows us 
+to compare the \texttt{lme4} results with the Stan results. Here, we focus on random effects. As illustrated in Figure \ref{fig:lmercomp}, the estimates of the random-effect standard deviations of the classical LMM are in agreement with the modes of the posterior distributions. However, the classical LMM is overparameterized due to an insufficient number of data points. Hence, correlations between random effects could not be estimated, as indicated by perfect correlations of $-1$ and $1$. In contrast, Stan can still estimate posterior distributions for these parameters (Figure \ref{fig:lmlist}). One may want to simplify the model
+for reasons of parsimony, or in order to have an easier model to work with. This can be done using model comparisons, with Leave One Out (LOO) Cross-validation or information criteria like the Watanabe Akaike (or Widely Available) Information Criterion (WAIC). See \citet{NicenboimVasishthStatMeth} for example code. 
 
 \begin{figure}[!htbp]
 \centering
@@ -1008,7 +1010,8 @@ abline(v = sigma_w[2])
 \section{Inference} \label{sec:bda}
  
 Having fit a correlated varying intercepts, varying slopes model, we now explain one way to carry out statistical inference, using  credible intervals.  
-We have used this approach to draw inferences from data in previously published work (e.g., \citealp{FrankEtAl2015}, \citealp{HofmeisterVasishth2014}). There are of course other approaches possible for carrying out inference. Bayes Factors are an example; see \citet{lee2013bayesian} and \citet{rouder2012default}. Another is to define a Region of Practical Equivalence \citep{kruschke2014doing}. The reader can choose the approach they find the most appealing.
+We have used this approach to draw inferences from data in previously published work (e.g., \citealp{FrankEtAl2015}, \citealp{HofmeisterVasishth2014}, \citealp{SafaviEtAlFrontiers2016}). There are of course other approaches possible for carrying out inference. Bayes Factors are an example; see \citet{lee2013bayesian} and \citet{rouder2012default}. Another is to define a Region of Practical Equivalence \citep{kruschke2014doing}. The reader can choose the approach they find the most appealing.
+For further discussion of Bayes Factors, with example code, see \citet{NicenboimVasishthStatMeth}.
 
 %\subsection{Inference using credible intervals} \label{subsec:posteriorintervals}
 
