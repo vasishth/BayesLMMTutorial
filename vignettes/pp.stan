@@ -23,8 +23,8 @@ transformed parameters{
      	matrix[J,2] u;
 	matrix[K,2] w;
      
-     u <- (diag_pre_multiply(sigma_u,L_u) * z_u)';	// subj random effects
-	w <- (diag_pre_multiply(sigma_w,L_w) * z_w)';	// item random effects
+     u = (diag_pre_multiply(sigma_u,L_u) * z_u)';	// subj random effects
+	w = (diag_pre_multiply(sigma_w,L_w) * z_w)';	// item random effects
 }
 
 model {
@@ -37,7 +37,7 @@ model {
 	to_vector(z_w) ~ normal(0,1);
 	
 	for (i in 1:N){
-		mu <- beta[1] + u[subj[i],1] + w[item[i],1] 
+		mu = beta[1] + u[subj[i],1] + w[item[i],1] 
 			+ (beta[2] + u[subj[i],2] + w[item[i],2])*so[i];
            rt[i] ~ lognormal(mu,sigma_e);        // likelihood
       }
@@ -47,8 +47,8 @@ generated quantities{
   real rt_tilde[N];
   real mu;
   for (i in 1:N){
-    mu <- beta[1] + u[subj[i],1] + w[item[i],1] 
+    mu = beta[1] + u[subj[i],1] + w[item[i],1] 
         + (beta[2] + u[subj[i],2] + w[item[i],2])*so[i];
-    rt_tilde[i] <- lognormal_rng(mu,sigma_e);
+    rt_tilde[i] = lognormal_rng(mu,sigma_e);
   }
 }

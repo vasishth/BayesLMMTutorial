@@ -12,7 +12,7 @@ parameters {
 model {
   real mu;
   for (i in 1:N){                   // likelihood
-    mu <- beta[1] + beta[2]*so[i];
+    mu = beta[1] + beta[2]*so[i];
     rt[i] ~ lognormal(mu,sigma_e);
   }
 }

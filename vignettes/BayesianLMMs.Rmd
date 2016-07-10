@@ -22,7 +22,7 @@ opts_chunk$set(comment=NA, fig.width=8, fig.height=10)
 
 This is the data reported in Gibson and Wu 2013. It is available with this package.
 
-## Model 1
+## Fixed effects model
 
 Read in the Read in the Gibson and Wu data and subset head noun:
 
@@ -134,7 +134,8 @@ print(signif(quantile(beta1,probs=c(0.025,0.5,0.975)),2))
 mean(beta1<0)
 ```
 
-## Model 2
+
+## Varying intercepts model
 
 
 $$\log rt_{jk} = \beta _0 + u_{0j} + w_{0k} + \beta _1 so_{jk} + \epsilon_{jk}$$
@@ -173,7 +174,41 @@ mean(beta1<0)
 ```
 
 
-## Model 3
+## Varying intercepts, varying slopes, no correlation model
+
+$$
+\log rt_{jk} = \beta_0 + u_{0j} + w_{0k} + (\beta_1 + u_{1j} + w_{1k}) so_{jk} + \epsilon_{jk} 
+$$
+
+```{r}
+############################
+## VARYING INTERCEPTS, 
+## VARYING SLOPES,
+## NO CORRELATION  
+## MIXED EFFECTS MODEL
+############################
+
+# 1. Compile and fit model.
+ranIntSlpNoCorFit <- stan(file="ranIntSlpNoCor.stan", data = stanDat, 
+                     iter=2000, chains = 4)
+
+save(list="ranIntSlpNoCorFit",
+     file="../data/ranIntSlpNoCorFit.Rda",
+     compress="xz")
+```
+
+```{r}
+print(ranIntSlpNoCorFit,pars=c("beta","sigma_e","sigma_u","sigma_w"),
+      probs=c(0.025,0.5,0.975))
+
+beta1 <- extract(ranIntSlpNoCorFit,pars=c("beta[2]"))$beta
+print(signif(quantile(beta1,probs=c(0.025,0.5,0.975)),2))
+
+mean(beta1<0)
+```
+
+
+## Varying intercepts, varying slopes, correlation model
 
 $$
 \log rt_{jk} = \beta_0 + u_{0j} + w_{0k} + (\beta_1 + u_{1j} + w_{1k}) so_{jk} + \epsilon_{jk} 
