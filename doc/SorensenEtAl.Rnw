@@ -112,6 +112,9 @@ Other important developments related to LMMs have been unfolding in  computation
 Specifically, probabilistic programming languages like WinBUGS \citep{lunn2000winbugs}, JAGS \citep{plummer2011jags} and Stan \citep{stan-manual:2014}, among others, have  made it possible to fit Bayesian LMMs quite easily. However, one prerequisite for using these programming languages is that some background statistical knowledge is needed before one can define the model. This difficulty is well-known; for example, \citet[4]{spiegelhalter2004bayesian} write: ``Bayesian statistics has a (largely deserved) reputation for being mathematically challenging and difficult to put into practice\dots''. 
 
 The purpose of this paper is to facilitate a first encounter with model specification in one of these programming languages, Stan. The tutorial is aimed primarily at psychologists, linguists, and cognitive scientists who have used \texttt{lme4} to fit models to their data, but who may have only a basic knowledge of the underlying LMM machinery. By ``basic knowledge'' we mean that they may not be able to answer some or all of these questions: what is a design matrix; what is contrast coding; what is a random effects variance-covariance matrix in a linear mixed model; what is the Cholesky decomposition? Our tutorial is not intended for statisticians or psychology researchers who could, for example, write their own Markov Chain Monte Carlo (MCMC) samplers in R or C++ or the like; for them, the Stan manual is the optimal starting point. The present tutorial attempts to ease the beginner into their first steps towards fitting Bayesian linear mixed models. More detailed presentations about linear mixed models are available in several textbooks; references are provided at the end of this tutorial. 
+For the complete newcomer to statistical methods, the articles by
+\citet{VasishthNicenboimStatMeth} and
+\citet{NicenboimVasishthStatMeth} should be read first, as they provide a grounds-up preparation for the present article.
 
 We have chosen Stan as the programming language of choice (over JAGS and WinBUGS) because it is possible to fit arbitrarily complex models with Stan. For example, it is possible (if time consuming) to fit a model with $14$ fixed effects predictors and two crossed random effects by subject and item, each involving a $14\times 14$ variance-covariance matrix \citep{BatesEtAlParsimonious}; as far as we are aware,  such models cannot be fit in JAGS or WinBUGS.\footnote{Whether it makes sense in general to fit such a complex model is a different issue; see \citet{Gelman14}, and \citet{BatesEtAlParsimonious} for recent discussion.}
 
@@ -137,11 +140,11 @@ We start with the two-condition repeated measures data-set~\citep{gibsonwu} as a
 
 
 
-\section{Bayesian modeling}
+\section{Bayesian statistics}
 
-Bayesian modeling has two major advantages over frequentist analysis with linear mixed models. First, information based on preceding results can be incoportated using different priors. Second, complex models with a large number of random variance components can be fit. In the following, we will provide a short introduction to Bayesian statistics which highlights these two advantages of Bayesian modeling.
+Bayesian modeling has two major advantages over frequentist analysis with linear mixed models. First, information based on pre-existing knowledge can be incorporated into the analysis using different priors. Second, complex models with a large number of random variance components can be fit. In the following, we will provide a short introduction to Bayesian statistics which highlights these two advantages of the Bayesian approach to data analysis.
 
-The first advantage of Bayesian modeling is a consequence of Bayes' Theorem, the fundamental rule of Bayesian statistics. It can be seen as a way of understanding how the probability that a hypothesis is true is affected by new data. In mathematical notation, Bayes' Theorem states
+The first advantage of the Bayesian approach is a consequence of Bayes' Theorem, the fundamental rule of Bayesian statistics. It can be seen as a way of understanding how the probability that a hypothesis is true is affected by new data. In mathematical notation, Bayes' Theorem states
 $$
 P(H\mid D) = \frac{P(D\mid H) P(H)}{P(D)},
 $$
