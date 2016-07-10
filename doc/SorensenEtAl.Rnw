@@ -36,12 +36,14 @@ A tutorial for psychologists, linguists, and cognitive scientists}
 \threeauthors{Tanner Sorensen}{Sven Hohenstein}{Shravan Vasishth}
 
 \threeaffiliations{
+Signal Analysis and Interpretation Laboratory, University of Southern California, Los Angeles, CA, USA
+}
+{
+Department of Psychology,
 University of Potsdam, Potsdam, Germany
 }
 {
-University of Potsdam, Potsdam, Germany
-}
-{
+Department of Linguistics,
 University of Potsdam, Potsdam, Germany, and \\
 CEREMADE, Universit\'e Paris-Dauphine, Paris, France}
 
