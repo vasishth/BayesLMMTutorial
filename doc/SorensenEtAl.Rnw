@@ -1,4 +1,4 @@
-\documentclass[man, floatsintext]{apa6} % man for manuscript format, jou for journal format, doc for standard LaTeX document format
+\documentclass[doc, floatsintext]{apa6} % man for manuscript format, jou for journal format, doc for standard LaTeX document format
 \usepackage[natbibapa]{apacite} 
 \usepackage[american]{babel}
 \usepackage[utf8]{inputenc}
