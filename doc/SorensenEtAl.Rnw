@@ -377,13 +377,13 @@ Having satisfied ourselves that the chains have converged, next we turn to exami
 \hline
 parameter        & mean   & 2.5\%  & 97.5\% & $\hat R$\\
 \hline
-$\hat \beta_0$ & 6.06    & 5.92   &  6.11  &  1\\
-$\hat \beta_1$ &  $-0.04$ & $-0.09$  &   0.01  &  1\\
-$\hat \sigma_e$ &   0.60  & 0.56   &   0.64   &  1\\
+$\hat \beta_0$  & 6.06      & 6.01    &  6.12 &  1\\
+$\hat \beta_1$  &  $-0.04$  & $-0.09$ &   0.02  &  1\\
+$\hat \sigma_e$ &   0.60    & 0.56    &   0.64   &  1\\
 \hline
 \end{tabular}
 \end{center}
-\caption{Examining the credible intervals and the R-hat statistic in the Gibson and Wu data.}\label{tab:quantilesGibsonWu}
+\caption{Credible intervals and R-hat statistic in the Gibson and Wu data.}\label{tab:quantilesGibsonWu}
 \end{table}
 
 \paragraph{Summarizing the result}
@@ -580,11 +580,11 @@ The posterior distributions of each of the parameters is summarized in Table~\re
 \hline
 parameter        & mean   & 2.5\%  &97.5\% & $\hat R$\\
 \hline
-$\hat \beta_0$ & 6.06 &   5.92  & 6.20  &  1\\
-$\hat \beta_1$ &  $-0.04$    &   $-0.08$  & 0.01 &  1\\
-$\hat \sigma_e$ &   0.52   &     0.49 &  0.55 &  1\\
-$\hat \sigma_u$ & 0.25   &    0.19  &  0.34 & 1\\
-$\hat \sigma_w$ & 0.20  &       0.12  &  0.32 &     1\\
+$\hat \beta_0$ & 6.06     &   5.92      & 6.20  &  1\\
+$\hat \beta_1$ &  $-0.04$ &   $-0.08$   & 0.01 &  1\\
+$\hat \sigma_e$ &   0.52  &     0.49    &  0.56 &  1\\
+$\hat \sigma_u$ & 0.26    &    0.19     &  0.34 & 1\\
+$\hat \sigma_w$ & 0.20    &       0.12  &  0.33 &     1\\
 \hline
 \end{tabular}
 \end{center}
@@ -686,13 +686,13 @@ model {
 \hline
 parameter        & mean   & 2.5\%  &97.5\% & $\hat R$\\
 \hline
-$\hat \beta_0$ & 6.06 &   5.92  & 6.21  &  1\\
+$\hat \beta_0$ & 6.06 &   5.92  & 6.20  &  1\\
 $\hat \beta_1$ &  $-0.04$    &   $-0.09$  & 0.02 &  1\\
-$\hat \sigma_e$ &   0.51   &     0.48 &  0.55 &  1\\
-$\hat \sigma_{u0}$ & 0.25   &    0.19  &  0.34 & 1\\
-$\hat \sigma_{u1}$ & 0.07   &    0.01  &  0.14 & 1\\
-$\hat \sigma_{w0}$ & 0.20  &       0.13  &  0.32 &     1\\
-$\hat \sigma_{w1}$ & 0.04  &       0.0  &  0.10 &     1\\
+$\hat \sigma_e$ &   0.52   &     0.48 &  0.55 &  1\\
+$\hat \sigma_{u0}$ & 0.25   &    0.18  &  0.34 & 1\\
+$\hat \sigma_{u1}$ & 0.06   &    0.01  &  0.13 & 1\\
+$\hat \sigma_{w0}$ & 0.20  &       0.12  &  0.32 &     1\\
+$\hat \sigma_{w1}$ & 0.04  &       0.01  &  0.11 &     1\\
 \hline
 \end{tabular}
 \end{center}
@@ -901,7 +901,7 @@ In our model, we choose $\nu=2.0$. This choice implies that the correlations on 
 The statement \texttt{to\_vector(z\_u) \textasciitilde{ }normal(0,1)} places a normal distribution with mean zero and standard deviation one on \texttt{z\_u}.\footnote{The function \texttt{to\_vector} means that we rearrange the matrix \texttt{z\_u} as a vector in order to place the normal distribution on a vector. This makes the code run faster.} The same goes for \texttt{z\_w}. The for-loop assigns to $\hbox{\texttt{mu}}$ the mean of the log-normal distribution from which we draw $\hbox{\texttt{rt[i]}}$, conditional on the value of the predictor \texttt{so[i]} for relative clause type and the subject and item identity.
 
 \paragraph{Running the model} 
-We can now fit the varying intercepts, varying slopes model; see Listing~\ref{fig:Model3code} for the code. We see in the model summary in Table~\ref{tab:Model3posterior} that the model has converged, and that the credible intervals of the parameter of interest, $\beta_1$, still includes zero. In fact, the posterior probability of the parameter being less than zero is now $90$\%. This information can be extracted as shown in Listing~\ref{fig:Model3code}, lines 6--8. 
+We can now fit the varying intercepts, varying slopes model; see Listing~\ref{fig:Model3code} for the code. We see in the model summary in Table~\ref{tab:Model3posterior} that the model has converged,\footnote{We do not report $\hat R$ for parameters $\rho _u$, $\rho _w$ because these parameters converge when $\hat R$ equals one for each entry of the matrices $L_u$, $L_w$. This was the case.} and that the credible intervals of the parameter of interest, $\beta_1$, still includes zero. In fact, the posterior probability of the parameter being less than zero is now $90$\%. This information can be extracted as shown in Listing~\ref{fig:Model3code}, lines 6--8. 
 
 \begin{table}[htp]
 \begin{center}
@@ -909,15 +909,15 @@ We can now fit the varying intercepts, varying slopes model; see Listing~\ref{fi
 \hline
 parameter        & mean   & 2.5\%  &97.5\% & $\hat R$\\
 \hline
-$\hat \beta_0$ & 6.06 &   5.92  & 6.21  &  1\\
-$\hat \beta_1$ &  $-0.04$    &   $-0.09$  & 0.02 &  1\\
-$\hat \sigma_e$ &   0.51   &     0.48 &  0.55 &  1\\
-$\hat \sigma_{u0}$ & 0.25   &    0.19  &  0.34 & 1\\
-$\hat \sigma_{u1}$ & 0.07   &    0.01  &  0.14 & 1\\
-$\hat \sigma_{w0}$ & 0.20  &       0.13  &  0.32 &     1\\
-$\hat \sigma_{w1}$ & 0.04  &       0.0  &  0.10 &     1\\
-$\hat \rho_{u}$ & $-0.44$   &    $-0.91$  &  0.36 & \\
-$\hat \rho_{w}$ & $-0.01$   &    $-0.76$  &  0.76 & \\
+$\hat \beta_0$    & 6.06 &   5.92  & 6.20  &  1\\
+$\hat \beta_1$    &  $-0.04$    &   $-0.09$  & 0.02 &  1\\
+$\hat \sigma_e$   &   0.52   &     0.48 &  0.55 &  1\\
+$\hat \sigma_{u0}$ & 0.25   &    0.18  &  0.34 & 1\\
+$\hat \sigma_{u1}$ & 0.07   &    0.01  &  0.13 & 1\\
+$\hat \sigma_{w0}$ & 0.20  &       0.12  &  0.32 &     1\\
+$\hat \sigma_{w1}$ & 0.04  &       0.0  &  0.11 &     1\\
+$\hat \rho_{u}$   & $-0.44$   &    $-0.91$  &  0.36 & \\
+$\hat \rho_{w}$   & $-0.01$   &    $-0.76$  &  0.76 & \\
 \hline
 \end{tabular}
 \end{center}
@@ -989,7 +989,7 @@ hist(omega_w,freq=FALSE,col="black",border="white",
 \paragraph{Random effects in a non-Bayesian LMM}
 
 We fit the same model also as a classical non-Bayesian LMM with the \texttt{lmer} function from the \texttt{lme4} package. This allows us 
-to compare the \texttt{lme4} results with the Stan results. Here, we focus on random effects. As illustrated in Figure \ref{fig:lmercomp}, the estimates of the random-effect standard deviations of the classical LMM are in agreement with the modes of the posterior distributions. However, the classical LMM is overparameterized due to an insufficient number of data points. Hence, correlations between random effects could not be estimated, as indicated by perfect correlations of $-1$ and $1$. In contrast, Stan can still estimate posterior distributions for these parameters (Figure \ref{fig:lmlist}). One may want to simplify the model
+to compare the \texttt{lme4} results with the Stan results. Here, we focus on random effects. As illustrated in Figure \ref{fig:lmercomp}, the estimates of the random-effect standard deviations of the classical LMM are in agreement with the modes of the posterior distributions. However, the classical LMM is overparameterized due to an insufficient number of data points. When fit to the Gibson \& Wu data, the correlation parameters are estimated as $-1$ and $1$. This means that correlations between random effects could not be estimated, as these are perfect correlations. In contrast, Stan can still estimate posterior distributions for these parameters (Figure \ref{fig:lmlist}). One may want to simplify the model
 for reasons of parsimony, or in order to have an easier model to work with. Model selection can be carried out by evaluating predictive performance of the model, with methods such as Leave One Out (LOO) Cross-validation, or by using information criteria like the Watanabe Akaike (or Widely Available) Information Criterion (WAIC). See \citet{NicenboimVasishthStatMeth} for discussion and example code. 
 
 \begin{figure}[!htbp]
