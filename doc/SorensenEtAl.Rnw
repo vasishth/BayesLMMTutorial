@@ -109,7 +109,7 @@ Within the programming environment R~\citep{R},
 the \texttt{nlme} package \citep{pinheirobates} and its successor, \texttt{lme4} \citep{Bates2015} have revolutionized the use of linear mixed models (LMMs) due to their simplicity and speed: one can fit fairly complicated models relatively quickly, often with a single line of code. A great advantage of LMMs over traditional approaches such as repeated measures ANOVA and paired t-tests is that there is no need to aggregate over subjects and items to compute two sets of F-scores (or several t-scores) separately; a single model can take all sources of variance into account simultaneously. Furthermore, comparisons between conditions can easily be implemented in a single model through appropriate contrast coding.
 
 Other important developments related to LMMs have been unfolding in  computational statistics.
-Specifically, probabilistic programming languages like WinBUGS \citep{lunn2000winbugs}, JAGS \citep{plummer2011jags} and Stan \citep{stan-manual:2014}, among others, have  made it possible to fit Bayesian LMMs quite easily. However, one prerequisite for using these programming languages is that some background statistical knowledge is needed before one can define the model. This difficulty is well-known; for example, \citet[4]{spiegelhalter2004bayesian} write: ``Bayesian statistics has a (largely deserved) reputation for being mathematically challenging and difficult to put into practice\dots''. 
+Specifically, probabilistic programming languages like WinBUGS \citep{lunn2000winbugs}, JAGS \citep{plummer2011jags} and Stan \citep{stan-manual:2014}, among others, have  made it possible to fit Bayesian LMMs quite easily. However, one prerequisite for using these programming languages is that some background statistical knowledge is needed before one can define the model. This difficulty is well-known; for example, \citet[p.~4]{spiegelhalter2004bayesian} write: ``Bayesian statistics has a (largely deserved) reputation for being mathematically challenging and difficult to put into practice\dots''. 
 
 The purpose of this paper is to facilitate a first encounter with model specification in one of these programming languages, Stan. The tutorial is aimed primarily at psychologists, linguists, and cognitive scientists who have used \texttt{lme4} to fit models to their data, but who may have only a basic knowledge of the underlying LMM machinery. By ``basic knowledge'' we mean that they may not be able to answer some or all of these questions: what is a design matrix; what is contrast coding; what is a random effects variance-covariance matrix in a linear mixed model; what is the Cholesky decomposition? Our tutorial is not intended for statisticians or psychology researchers who could, for example, write their own Markov Chain Monte Carlo (MCMC) samplers in R or C++ or the like; for them, the Stan manual is the optimal starting point. The present tutorial attempts to ease the beginner into their first steps towards fitting Bayesian linear mixed models. More detailed presentations about linear mixed models are available in several textbooks; references are provided at the end of this tutorial. 
 For the complete newcomer to statistical methods, the articles by
@@ -247,7 +247,7 @@ The mean of the log-normal distribution of $\hbox{\texttt{rt}}$ is the sum of $\
 This is a \textit{fixed effects model}. The index $i$ represents the $i$-th row in the data-frame (in this case, $i \in \{1,\dots,547\}$); the term $\varepsilon_i$ represents the error in the $i$-th row.
 With the above $\pm 1$ contrast coding, $\beta _0$ represents the grand mean of $\log \hbox{\texttt{rt}}$, regardless of relative clause type. It can be estimated by simply taking the grand mean of $\log \hbox{\texttt{rt}}$.
 The parameter $\beta _1$ is an adjustment to $\beta _0$ so that the mean of $\log \hbox{\texttt{rt}}$ is $\beta _0 + 1 \beta _1$ when $\log \hbox{\texttt{rt}}$ is from the object relative condition, and $\beta _0 - 1 \beta _1$ when $\log \hbox{\texttt{rt}}$ is from the subject relative condition. Notice that $2 \beta_1$ will be the difference in the means between the object and subject relative clause conditions.
-Together, $\beta _0$ and $\beta _1$ make up the part of the model which characterizes the effect of the experimental manipulation, relative clause type (\texttt{so}), on the dependent variable \texttt{rt}. We call this a fixed effects model because we estimate the parameters $\beta _0$ and $\beta _1$, which do not vary from subject to subject or from item to item. In R, this would correspond to fitting a simple linear model using the \texttt{lm} function, with \texttt{so} as predictor and $\log rt$ as dependent variable.
+Together, $\beta _0$ and $\beta _1$ make up the part of the model which characterizes the effect of the experimental manipulation, relative clause type (\texttt{so}), on the dependent variable \texttt{rt}. We call this a fixed effects model because we estimate the parameters $\beta _0$ and $\beta _1$, which do not vary from subject to subject or from item to item. In R, this would correspond to fitting a simple linear model using the \texttt{lm} function, with \texttt{so} as predictor and $\log \hbox{\texttt{rt}}$ as dependent variable.
 
 The error $\varepsilon _i $ is positive when $\log \hbox{\texttt{rt}}_i$ is greater than the expected value $\mu_i = \beta _0 + \beta _1 \hbox{\texttt{so}}_i$ and negative when $\log \hbox{\texttt{rt}}_i$ is less than the expected value $\mu_i$. Thus, the error is the amount by which the expected value differs from  actually observed value. We assume that the $\varepsilon_i$ are independently and identically distributed as a normal distribution with mean zero and unknown standard deviation $\sigma_e$. Stan parameterizes the normal distribution by the mean and standard deviation, and we follow that convention here by writing the distribution of $\varepsilon$ as $\mathcal{N}(0, \sigma _e)$. (This is different from  the standard notation in statistics, where the normal distribution is defined in terms of mean and variance.) A consequence of the assumption that the errors are identically distributed is that the distribution of $\varepsilon$ should, at least approximately, have the same shape as the normal distribution. Independence implies that there should be no correlation between the errors---this is not the case in the data, since we have multiple measurements from each subject and multiple measurements from each item. This introduces correlation between errors. 
 
@@ -289,7 +289,7 @@ beta1 <- unlist(extract(fixEfFit, pars = "beta[2]"))
 print(quantile(beta1, probs = c(0.025, 0.5, 0.975)))
 \end{Verbatim}
 % @
-\caption{Code for the fixed effects model.}\label{fig:fixefcode}
+\caption{R code for the fixed effects model.}\label{fig:fixefcode}
 \end{listing}
 \doublespacing
 
@@ -335,7 +335,7 @@ To understand the Stan syntax, compare the Stan code above to the specification 
 The for-loop assigns to \texttt{mu} the mean for the log-normal distribution of \texttt{rt[i]}, conditional on the value of the predictor \texttt{so[i]} for relative clause type. The statement \texttt{rt[i] \textasciitilde{ }lognormal(mu, sigma\_e)} in a for-loop means that the logarithm of each value in the vector $\hbox{\texttt{rt}}$ is normally distributed with mean \texttt{mu} and standard deviation \texttt{sigma\_e}.\footnote{One could have equally well log-transformed the reading time and assumed a normal distribution instead of the lognormal.}
 
 The prior distributions on the parameters \texttt{beta} and \texttt{sigma\_e} would ordinarily be declared in the model block. If we don't declare any prior, it is assumed that they have a uniform prior distribution.
-Note that the distribution of \texttt{sigma\_e} is truncated at zero because \texttt{sigma\_e} is constrained to be positive (see the declaration \texttt{real<lower=0> sigma\_e;} in the parameters block). This means that the error has a uniform prior with lower bound zero.\footnote{This is an example of an improper prior, which is not a probability distribution. Although all the improper priors used in this tutorial produce posteriors which are probability distributions, this is not true in general, and care should be taken in using improper priors~\citep{gelman2006prior}. In the present case, a Cauchy prior truncated to have a lower bound of 0 could alternatively be defined for the standard deviation. For example code using such a prior, see the KBStan vignette in the \texttt{RePsychLing} package https://github.com/dmbates/RePsychLing.}
+Note that the distribution of \texttt{sigma\_e} is truncated at zero because \texttt{sigma\_e} is constrained to be positive (see the declaration \texttt{real<lower=0> sigma\_e;} in the parameters block). This means that the error has a uniform prior with lower bound zero.\footnote{This is an example of an improper prior, which is not a probability distribution. Although all the improper priors used in this tutorial produce posteriors which are probability distributions, this is not true in general, and care should be taken in using improper priors~\citep{gelman2006prior}. In the present case, a Cauchy prior truncated to have a lower bound of 0 could alternatively be defined for the standard deviation. For example code using such a prior, see the KBStan vignette in the \texttt{RePsychLing} package \citep{repsychling}.}
 
 \paragraph{Running the model}
 We save the file \texttt{fixEf.stan} which contains the Stan code and fit the model in R with the function \texttt{stan} from the package \texttt{rstan} (Listing~\ref{fig:fixefcode}, lines 15--16).
@@ -494,7 +494,7 @@ print(quantile(beta1, probs = c(0.025, 0.5, 0.975)))
 mean(beta1 < 0)                  
 \end{Verbatim}
 % @
-\caption{Code for running the random intercepts model, the varying intercepts model. Note that lines 1-10 and 14 of Listing~\ref{fig:fixefcode} must be run first.}\label{fig:Model2code}
+\caption{R code for running the random intercepts model, the varying intercepts model. Note that lines 1--10 and 14 of Listing~\ref{fig:fixefcode} must be run first.}\label{fig:Model2code}
 \end{listing}
 \doublespacing
 The data which we prepare for passing on to the function \texttt{stan} now includes subject and item information (Listing~\ref{fig:Model2code}, lines 2--8). 
@@ -612,9 +612,9 @@ Listing~\ref{fig:varintslpcode} contains the R code for fitting the varying inte
 \begin{listing}
 % <<Model3code, eval=FALSE>>=
 \begin{Verbatim}[numbers=left,frame=single,fontfamily=courier,fontsize=\footnotesize]
-# 1. Compile and fit model.
+# 1. Compile and fit model
 ranIntSlpNoCorFit <- stan(file="ranIntSlpNoCor.stan", data = stanDat, 
-                     iter=2000, chains = 4)
+                     iter = 2000, chains = 4)
                      
 # posterior probability of beta 1 being less
 # than 0:
@@ -623,7 +623,7 @@ print(quantile(beta1, probs = c(0.025, 0.5, 0.975)))
 mean(beta1 < 0)
 \end{Verbatim}
 % @
-\caption{Code for running the varying intercepts, varying slopes model. Note that lines 1-10 and 14 of Listing~\ref{fig:fixefcode} and lines 2-8 of Listing~\ref{fig:Model2code} must be run first.}\label{fig:varintslpcode}
+\caption{R code for running the varying intercepts, varying slopes model. Note that lines 1-10 and 14 of Listing~\ref{fig:fixefcode} and lines 2--8 of Listing~\ref{fig:Model2code} must be run first.}\label{fig:varintslpcode}
 \end{listing}
 \doublespacing
 
@@ -792,7 +792,7 @@ print(quantile(beta1, probs = c(0.025, 0.5, 0.975)))
 mean(beta1 < 0)
 \end{Verbatim}
 % @
-\caption{Code for running the correlated varying intercepts, varying slopes model. Note that lines 1-10 and 14 of Listing~\ref{fig:fixefcode} and lines 2-8 of Listing~\ref{fig:Model2code} must be run first.}\label{fig:Model3code}
+\caption{R code for running the correlated varying intercepts, varying slopes model. Note that lines 1--10 and 14 of Listing~\ref{fig:fixefcode} and lines 2--8 of Listing~\ref{fig:Model2code} must be run first.}\label{fig:Model3code}
 \end{listing}
 \doublespacing
 
@@ -1045,7 +1045,7 @@ abline(v=omegaHPD,lty=2,lwd=2)
 \caption{Upper and lower bounds on the highest posterior density credible intervals (dashed lines) plotted over the marginal posterior distribution of the fixed slope $\beta _1$ (left) and of the correlation $\rho _u$ between the by-subject varying intercepts and varying slopes (right).} \label{fig:hpdinterval}
 \end{figure}
 
-The result of fitting the varying intercepts, varying slopes model is the posterior distribution of the model parameters. Direct inference from the posterior distributions is possible. For instance, we can find the posterior probability with which the fixed intercept $\beta _1$ or the correlation $\rho _u$ between by-subject varying intercepts and slopes take on any given value by consulting the marginal posterior distributions whose histograms are shown in Figure~\ref{fig:hpdinterval}. The information conveyed by such graphs can be sharpened by using the $95$\% credible interval, mentioned earlier.  Approximately $95$\% of the posterior density of $\beta _1$ lies between the $2.5$ percentile \Sexpr{signif(quantile(beta1,probs=.025),2)} and the $97.5$ percentile \Sexpr{signif(quantile(beta1,probs=.975),2)}.
+The result of fitting the varying intercepts, varying slopes model is the posterior distribution of the model parameters. Direct inference from the posterior distributions is possible. For instance, we can find the posterior probability with which the fixed intercept $\beta _1$ or the correlation $\rho _u$ between by-subject varying intercepts and slopes take on any given value by consulting the marginal posterior distributions whose histograms are shown in Figure~\ref{fig:hpdinterval}. The information conveyed by such graphs can be sharpened by using the $95$\% credible interval, mentioned earlier.  Approximately $95$\% of the posterior density of $\beta _1$ lies between the $2.5$th  percentile \Sexpr{signif(quantile(beta1,probs=.025),2)} and the $97.5$th percentile \Sexpr{signif(quantile(beta1,probs=.975),2)}.
 This leads us to conclude that the slope $\beta _1$ for relative clause type $\hbox{\texttt{so}}$ is less than zero with probability $90$\% (see Listing~\ref{fig:Model3code}, line 8). Since zero is included in the credible interval, it is difficult to draw the inference that object relative clauses are read faster than subject relative clauses. However, one could perhaps still make a weak claim that object relatives are easier to process, especially if a lot of evidence has accumulated in other experiments that supports such a conclusion (see \citealp{VasishthetalPLoSOne2013} for a more detailed discussion). Meta-analysis of existing studies can help in obtaining a better estimate of the posterior distribution of a parameter; for psycholinguistic examples, see \citet{Vasishth:MScStatistics,EngelmannJaegerVasishth2016,mahowald2016meta}.
 
 What about the correlations between varying intercepts and varying slopes for subject and for item? What can we infer from the analysis about these relationships?
@@ -1354,7 +1354,7 @@ We also have to adapt the Stan code to the model formulation (see Listing~\ref{f
 The vector \texttt{beta} contains the fixed effects $\beta _0$ and $\beta_1$. The matrices \texttt{L\_u}, \texttt{L\_w} and the arrays \texttt{z\_u}, \texttt{z\_w} of vectors (not to be confused with the design matrices \texttt{Z\_u} and \texttt{Z\_w}) will generate the varying intercepts and slopes $u_0, u_1$ and $w_0, w_1$, using the procedure described for the varying intercepts, varying slopes model. For example, the command \verb|vector[n_u] u[J]| specifies \texttt{u} as an array of \texttt{J} vectors of length \texttt{n\_u}; hence, there is one vector per subject. The vector \texttt{sigma\_u} contains the standard deviations of the by-subject varying intercepts and slopes $u_0, u_1$, and the vector \texttt{sigma\_w} contains the standard deviations of the by-item varying intercepts and slopes $w_0, w_1$. The variable \texttt{sigma\_e} is the standard deviation $\sigma _e$ of the error $\varepsilon$.
 The transformed parameters block generates the by-subject intercepts and slopes $u_0, u_1$ and the by-item intercepts and slopes $w_0, w_1$.
 
-We place lkj priors on the random effects correlation matrices through the \texttt{lkj\_corr\_cholesky(2.0)} priors on their Cholesky factors \texttt{L\_u} and \texttt{L\_w}. We implicitly place uniform priors on the fixed effects $\beta _0, \beta_1$, the random effects standard deviations $\sigma _{u0}, \sigma_{u1}$, and $\sigma _{w0}, \sigma_{w1}$ and the error standard deviation $\sigma _e$ by omitting any prior specifications for them in the model block. We specify the likelihood with the probability statement that \texttt{rt[i]} is distributed log-normally with mean \texttt{X[i] * beta + Z\_u[i] * u[subj[i]] + Z\_w[i] * w[item[i]]} and standard deviation \texttt{sigma\_e}.
+We place lkj priors on the random effects correlation matrices through the \texttt{lkj\_corr\_cholesky(2.0)} priors on their Cholesky factors \texttt{L\_u} and \texttt{L\_w}. We implicitly place uniform priors on the fixed effects $\beta_0, \beta_1$, the random effects standard deviations $\sigma _{u0}, \sigma_{u1}$, and $\sigma_{w0}, \sigma_{w1}$ and the error standard deviation $\sigma _e$ by omitting any prior specifications for them in the model block. We specify the likelihood with the probability statement that \texttt{rt[i]} is distributed log-normally with mean \texttt{X[i] * beta + Z\_u[i] * u[subj[i]] + Z\_w[i] * w[item[i]]} and standard deviation \texttt{sigma\_e}.
 The next step towards model-fitting is to pass the list \texttt{stanDat} to \texttt{stan}, which compiles a C++ program to sample from the posterior distribution of the model parameters.
 
 A major advantage of the above matrix formulation is that we do not need to write a new Stan model for a future repeated measures design. All we have to do now is define the design matrix $\mathbf X$ appropriately, and include it (along with appropriately defined $\mathbf Z_u$ and $\mathbf Z_w$ for the subjects and items random effects) as part of the data specification that is passed to Stan. 
