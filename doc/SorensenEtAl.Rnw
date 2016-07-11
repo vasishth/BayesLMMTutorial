@@ -339,7 +339,11 @@ Note that the distribution of \texttt{sigma\_e} is truncated at zero because \te
 
 \paragraph{Running the model}
 We save the file \texttt{fixEf.stan} which contains the Stan code and fit the model in R with the function \texttt{stan} from the package \texttt{rstan} (Listing~\ref{fig:fixefcode}, lines 15--16).
-This call to the function \texttt{stan} will compile a C++ program which produces samples from the joint posterior distribution of the fixed intercept $\beta _0$, the fixed slope $\beta _1$, and the standard deviation $\sigma _e$ of the error. Here, the function generates four \textit{chains} of samples, each of which contains $2000$ samples of each parameter. Samples $1$ to $1000$ are part of the \textit{warmup}, where the chains settle into the posterior distribution. We analyze samples $1001$ to $2000$. The result is saved to an object \texttt{fixEfFit} of class \texttt{stanFit}.
+This call to the function \texttt{stan} will compile a C++ program which produces samples from the joint posterior distribution of the fixed intercept $\beta _0$, the fixed slope $\beta _1$, and the standard deviation $\sigma _e$ of the error.
+
+The function generates four \textit{chains} of samples. A \emph{Markov chain} is a stochastic process, in which random values are sequentially generated. Each sample depends on the previous one. Different chains are independent of each other such that running a Stan model with four chains is equivalent to running four (identically specified) Stan models with one chain each. For the model used here, each of the four chains contains $2000$ samples of each parameter.
+
+Samples $1$ to $1000$ are part of the \textit{warmup}, where the chains settle into the posterior distribution. We analyze samples $1001$ to $2000$. The result is saved to an object \texttt{fixEfFit} of class \texttt{stanFit}.
 
 The warmup samples, also known as the \emph{burn-in} period, are intended to allow the MCMC sampling process to converge to the posterior distribution. Once a chain has converged, the samples remain quite stable.\footnote{See,~\cite{Gelman14} for a precise discussion of convergence.} Before the MCMC sampling process, the number of interations necessary for convergence is unknown. Therefore, all warmup samples are discarded. This is necessary since the initial values of the parameters might have low posterior probability and might therefore bias the result.
 
@@ -790,6 +794,20 @@ ranIntSlpFit <- stan(file = "ranIntSlp.stan", data = stanDat,
 beta1 <- unlist(extract(ranIntSlpFit, pars = "beta[2]"))
 print(quantile(beta1, probs = c(0.025, 0.5, 0.975)))
 mean(beta1 < 0)
+
+## Use the L matrices the compute the correlation matrices
+# L matrices
+L_u <- extract(ranIntSlpFit, pars = "L_u")$L_u
+L_w <- extract(ranIntSlpFit, pars = "L_w")$L_w
+
+# correlation parameters
+cor_u <- apply(L_u, 1, function(x) tcrossprod(x)[1, 2])
+cor_w <- apply(L_w, 1, function(x) tcrossprod(x)[1, 2])
+
+print(signif(quantile(cor_u, probs = c(0.025, 0.5, 0.975)), 2))
+print(mean(cor_u))
+print(signif(quantile(cor_w, probs = c(0.025, 0.5, 0.975)), 2))
+print(mean(cor_w))
 \end{Verbatim}
 % @
 \caption{R code for running the correlated varying intercepts, varying slopes model. Note that lines 1--10 and 14 of Listing~\ref{fig:fixefcode} and lines 2--8 of Listing~\ref{fig:Model2code} must be run first.}\label{fig:Model3code}
@@ -898,6 +916,8 @@ $\hat \sigma_{u0}$ & 0.25   &    0.19  &  0.34 & 1\\
 $\hat \sigma_{u1}$ & 0.07   &    0.01  &  0.14 & 1\\
 $\hat \sigma_{w0}$ & 0.20  &       0.13  &  0.32 &     1\\
 $\hat \sigma_{w1}$ & 0.04  &       0.0  &  0.10 &     1\\
+$\hat \rho_{u}$ & $-0.44$   &    $-0.91$  &  0.36 & \\
+$\hat \rho_{w}$ & $-0.01$   &    $-0.76$  &  0.76 & \\
 \hline
 \end{tabular}
 \end{center}

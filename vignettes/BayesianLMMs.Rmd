@@ -241,6 +241,24 @@ print(signif(quantile(beta1, probs = c(0.025, 0.5, 0.975)), 2))
 mean(beta1 < 0)
 ```
 
+Use the L matrix the compute the correlation matrix.
+
+```{r}
+# L matrices
+L_u <- extract(ranIntSlpFit, pars = "L_u")$L_u
+L_w <- extract(ranIntSlpFit, pars = "L_w")$L_w
+
+# correlation parameters
+cor_u <- apply(L_u, 1, function(x) tcrossprod(x)[1, 2])
+cor_w <- apply(L_w, 1, function(x) tcrossprod(x)[1, 2])
+
+print(signif(quantile(cor_u, probs = c(0.025, 0.5, 0.975)), 2))
+print(mean(cor_u))
+print(signif(quantile(cor_w, probs = c(0.025, 0.5, 0.975)), 2))
+print(mean(cor_w))
+```
+
+
 Comparison with lme4: note that lme4 fails to estimate the correlations:
 
 ```{r}
