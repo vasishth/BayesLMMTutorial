@@ -171,7 +171,7 @@ v0 <- 1000
 vstar0 <- 1 / (1/v0 + n/(sd^2))
 mstar0 <- vstar0 * (m0/v0 + (n * xbar) / (sd^2))
 # plot
-curve(dnorm(x, mean = xbar, sd = sd), from = 0, to = 160, ylim = c(0, 0.06),
+curve(dnorm(x, mean = xbar, sd = sd/n), from = 0, to = 160, ylim = c(0, 0.21),
       lty = 2, ylab = "Density")
 curve(dnorm(x, mean = m0, sd = sqrt(v0)), add = TRUE)
 curve(dnorm(x, mean = mstar0, sd = sqrt(vstar0)), add = TRUE, lty = 4)
@@ -184,7 +184,7 @@ v1 <- 100
 vstar1 <- 1 / (1/v1 + n/(sd^2))
 mstar1 <- vstar1 * (m1/v1 + (n * xbar) / (sd^2))
 # plot
-curve(dnorm(x, mean = xbar, sd = sd), from = 0, to = 160, ylim = c(0, 0.06),
+curve(dnorm(x, mean = xbar, sd = sd/n), from = 0, to = 160, ylim = c(0, 0.21),
       lty = 2, ylab = "Density")
 curve(dnorm(x, mean = m1, sd = sqrt(v1)), add = TRUE)
 curve(dnorm(x, mean = mstar1, sd = sqrt(vstar1)), add = TRUE, lty = 4)
