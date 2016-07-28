@@ -1086,6 +1086,7 @@ For those with introductory calculus, a slightly more technical introduction to 
 \section*{Acknowledgements}
 
 We are grateful to the developers of Stan (in particular, Andrew Gelman, Bob Carpenter) and members of the Stan mailing list for their advice regarding model specification. Douglas Bates and Reinhold Kliegl have helped considerably over the years in improving our understanding of LMMs from a frequentist perspective. We also thank Edward Gibson for releasing his published data. Titus von der Malsburg, Lena J\"ager, and Bruno Nicenboim provided useful comments on previous drafts.
+Thanks also go to Charles S.\ Stanton for catching a mistake in our code.
 
 \clearpage
 
